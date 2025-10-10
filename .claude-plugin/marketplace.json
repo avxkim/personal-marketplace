@@ -1,0 +1,13 @@
+{
+  "name": "personal-marketplace",
+  "owner": {
+    "name": "Alexander Kim"
+  },
+  "plugins": [
+    {
+      "name": "personal-plugin",
+      "source": "./personal-plugin",
+      "description": "My own set of agents, commands, hooks"
+    }
+  ]
+}
