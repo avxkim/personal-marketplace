@@ -7,6 +7,24 @@
 - The code-reviewer agent will provide PASS/FAIL verdict
 ` `software-architect` agent should run in parallel with `code-reviewer`
 
+## Review Workflow:
+1. **Determine Review Scope**
+   - Check git status to identify changed files
+   - Parse arguments to see if user requested specific review aspects
+   - Default: Run all applicable reviews
+2. **Available Review Aspects:**
+   - **comments** - Analyze code comment accuracy and maintainability
+   - **tests** - Review test coverage quality and completeness
+   - **errors** - Check error handling for silent failures
+   - **types** - Analyze type design and invariants (if new types added)
+   - **code** - General code review for project guidelines
+   - **simplify** - Simplify code for clarity and maintainability
+   - **all** - Run all applicable reviews (default)
+3. **Identify Changed Files**
+   - Run `git diff --name-only` to see modified files
+   - Check if PR/MR already exists: `gh pr view` or `glab mr view``
+   - Identify file types and what reviews apply
+
 After thorough review, ask if you should write a comment on the MR/PR page.
 Don't add "reviewed by", review dates in the footer of the comment.
 Use the following comment template based on code-reviewer agent output:
