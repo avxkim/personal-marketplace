@@ -8,6 +8,7 @@
 ` `software-architect` agent should run in parallel with `code-reviewer`
 
 After thorough review, ask if you should write a comment on the MR/PR page.
+Don't add "reviewed by", review dates in the footer of the comment.
 Use the following comment template based on code-reviewer agent output:
 
 # Code Review Summary 🔍
