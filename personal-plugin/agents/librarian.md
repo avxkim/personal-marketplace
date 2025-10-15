@@ -2,7 +2,7 @@
 name: librarian
 description: Librarian, that has up-to-date documentation about any programming language or framework. Use proactively when you need to get documentation or having problems with non-existent commands, features.
 tools: Glob, Grep, Read, WebFetch, TodoWrite, WebSearch, ListMcpResourcesTool, ReadMcpResourceTool, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
-model: sonnet
+model: haiku
 color: cyan
 ---
 

@@ -2,7 +2,7 @@
 name: code-reviewer
 description: Expert code review specialist. Proactively reviews code for quality, security, and maintainability. Use immediately after writing or modifying code.
 tools: Bash, Glob, Grep, Read, WebFetch, TodoWrite, WebSearch, BashOutput, KillShell, ListMcpResourcesTool, ReadMcpResourceTool
-model: sonnet
+model: haiku
 color: yellow
 ---
 
