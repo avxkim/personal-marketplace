@@ -103,7 +103,7 @@ Delegates to code-reviewer and software-architect agents:
 
 ## Auto-Formatting Hooks
 
-The plugin includes automatic formatting hooks configured in `personal-plugin/hooks/settings.json` that trigger after any Edit/Write/MultiEdit operation using the `PostToolUse` event:
+The plugin includes automatic formatting hooks configured in `personal-plugin/hooks/hooks.json` that trigger after any Edit/Write/MultiEdit operation using the `PostToolUse` event:
 
 ### Supported Languages and Tools
 
