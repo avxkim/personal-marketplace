@@ -14,8 +14,8 @@ fi
 output=$(cat <<'EOF'
 {
   "continue": true,
-  "stopReason": "Code changes detected. Running code-reviewer agent before completing.",
-  "systemMessage": "⚠️ Code changes detected. Launching code-reviewer agent..."
+  "stopReason": "Code changes detected. Running code-reviewer and documentarian agents before completing.",
+  "systemMessage": "⚠️ Code changes detected. Launching code-reviewer and documentarian agents..."
 }
 EOF
 )
