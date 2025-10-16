@@ -60,4 +60,7 @@ case "$file_path" in
         ;;
 esac
 
+file_name=$(basename "$file_path")
+echo "✓ Auto-formatted: $file_name"
+
 exit 0
