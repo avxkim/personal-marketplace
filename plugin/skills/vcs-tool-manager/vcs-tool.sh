@@ -24,9 +24,12 @@ case "$command" in
     validate-url)
         python3 "$SCRIPTS_DIR/validate_url.py" "$@"
         ;;
+    find-line)
+        python3 "$SCRIPTS_DIR/find_line_number.py" "$@"
+        ;;
     *)
         echo "Unknown command: $command" >&2
-        echo "Available commands: detect-platform, get-gitlab-mr, get-github-pr, format-url, validate-url" >&2
+        echo "Available commands: detect-platform, get-gitlab-mr, get-github-pr, format-url, validate-url, find-line" >&2
         exit 1
         ;;
 esac

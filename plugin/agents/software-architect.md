@@ -31,14 +31,21 @@ When reviewing merge requests or pull requests:
 
 **CRITICAL - Accurate Line Numbers:**
 
-When referencing architectural concerns in code:
+When referencing architectural concerns in code, use the `avx:vcs-tool-manager` skill's `find-line` command:
 
-1. **Don't use git diff line numbers directly** - they show relative positions, not absolute file line numbers
-2. **Find exact line numbers**:
-   - Use `grep -n "pattern" filename` to find the exact line
-   - Use `Read` tool to read the file and verify the line number
-3. **Verify before creating links**: Ensure the line number points to the actual code being discussed
-4. **Example**: If discussing a service boundary violation, grep for the method name to get the accurate line number
+1. **NEVER use git diff line numbers** - they show relative positions, not absolute file line numbers
+2. **ALWAYS use vcs-tool-manager's find-line command**:
+
+   ```bash
+   VCS_TOOL=$(for path in $(jq -r 'to_entries[] | .value.installLocation + "/plugin/skills/vcs-tool-manager/vcs-tool.sh"' ~/.claude/plugins/known_marketplaces.json); do [ -f "$path" ] && echo "$path" && break; done)
+
+   # Find exact line for architectural issue
+   RESULT=$("$VCS_TOOL" find-line "src/Service.java" "directDatabaseAccess" "Controller")
+   LINE=$(echo "$RESULT" | jq -r '.line')
+   ```
+
+3. **Use method search for boundaries**: Use `--method` flag to find class/method definitions
+4. **Provides context**: The tool returns surrounding code to help explain architectural concerns
 
 ## Core Responsibilities
 

@@ -4,8 +4,8 @@
 - **Working Directory**: Agents will check current directory first and only clone if necessary
 - ALWAYS delegate review to `code-reviewer` agent with the MR/PR URL from $ARGUMENTS
 - The `code-reviewer` agent will fetch MR/PR details, diff, and any existing comments itself
-- The `code-reviewer` agent will use the `avx:vcs-tool-manager` skill to generate validated line links automatically
-- The `code-reviewer` agent will verify line numbers before generating links (uses grep -n and file reads, not just git diff positions)
+- The `code-reviewer` agent will use the `avx:vcs-tool-manager` skill's `find-line` command to get accurate line numbers and generate validated links
+- **Line Number Resolution**: Uses Python-based `find-line` tool (NOT git diff positions) to ensure links point to correct code
 - The code-reviewer agent will provide PASS/FAIL verdict, `software-architect` agent should run in parallel with `code-reviewer`
 
 ## Review Workflow:
@@ -67,7 +67,7 @@ OR
 ## Template guidelines
 
 - **Filename** - must be in bold text, not as heading
-- **FILENAME:LINE** - must be a clickable link to exact line (e.g., https://gitlab.com/repo/file.js#L42). The `code-reviewer` agent will use the `avx:vcs-tool-manager` skill to generate these links with verified, accurate line numbers (not git diff positions).
+- **FILENAME:LINE** - must be a clickable link to exact line (e.g., https://gitlab.com/repo/file.js#L42). The `code-reviewer` agent uses the `find-line` command to get verified, accurate line numbers (NOT git diff positions), then generates links via `avx:vcs-tool-manager` skill.
 - Link should point to the source branch being reviewed (the skill handles this automatically)
 - Issue descriptions should be clear and actionable
 - Only include sections that have issues (skip empty sections)

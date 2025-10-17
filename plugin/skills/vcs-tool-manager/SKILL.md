@@ -231,6 +231,96 @@ HTTP Code: 200
 - 0: URL is valid (HTTP 200 or 302)
 - 1: URL is invalid or unreachable
 
+### 5. Find Line Number (RECOMMENDED for Code Reviews)
+
+**Script**: `find_line_number.py`
+
+**Purpose**: Finds accurate line numbers in source files for code patterns. This solves the problem of git diff showing relative positions instead of absolute file line numbers.
+
+**Usage**:
+
+```bash
+"$VCS_TOOL" find-line <file_path> <pattern> [context_hint] [--method|--regex]
+```
+
+**Parameters**:
+
+- `file_path`: Absolute or relative path to the source file
+- `pattern`: Code snippet or pattern to search for (exact string match by default)
+- `context_hint` (optional): Additional context to disambiguate multiple matches (e.g., method name)
+- `--method`: Search for method/function definitions
+- `--regex`: Use regex pattern matching instead of literal string
+
+**Output** (JSON):
+
+```json
+{
+  "found": true,
+  "file": "src/main/java/Service.java",
+  "pattern": "updateRouteDeviationNotification",
+  "line": 342,
+  "content": "    updateRouteDeviationNotification(route);",
+  "context": [
+    "    saved = routeRepository.save(route);",
+    "    routeWialonService.updateUnits(saved);",
+    "    updateRouteDeviationNotification(route);",
+    "    notificationWialonService.updateGeozone(saved);",
+    "    notificationWialonService.updateRoute(saved);"
+  ],
+  "match_count": 1
+}
+```
+
+**Multiple Matches Output**:
+
+```json
+{
+  "found": true,
+  "file": "src/Service.java",
+  "pattern": "save",
+  "line": 156,
+  "content": "    repository.save(entity);",
+  "context": ["...", "...", "..."],
+  "match_count": 3,
+  "all_matches": [
+    { "line": 156, "content": "    repository.save(entity);" },
+    { "line": 298, "content": "    cache.save(data);" },
+    { "line": 401, "content": "    file.save(path);" }
+  ],
+  "warning": "Multiple matches found (3). Using best match based on context."
+}
+```
+
+**Exit Codes**:
+
+- 0: Pattern found
+- 1: Pattern not found or file error
+
+**Examples**:
+
+```bash
+# Find exact line for method call
+"$VCS_TOOL" find-line src/Service.java "updateRouteDeviationNotification"
+
+# Find method definition
+"$VCS_TOOL" find-line src/Service.java "createRouteUnits" --method
+
+# Find with context hint to disambiguate
+"$VCS_TOOL" find-line src/Service.java "save" "createRouteUnits"
+
+# Use regex pattern
+"$VCS_TOOL" find-line src/Service.java "save\(.*\)" --regex
+```
+
+**Why Use This Instead of grep?**
+
+- ✅ Returns structured JSON output
+- ✅ Provides surrounding context automatically
+- ✅ Handles multiple matches intelligently
+- ✅ Works with context hints to find the right match
+- ✅ Specifically designed for code review workflows
+- ✅ Exit codes for error handling
+
 ## Complete Workflow Examples
 
 ### Automatic Platform Detection (RECOMMENDED)

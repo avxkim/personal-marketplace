@@ -37,31 +37,49 @@ You are an expert code reviewer. Optimize for correctness, security, performance
 
 **CRITICAL - Accurate Line Numbers:**
 
-When referencing code issues, you MUST get accurate line numbers:
+When referencing code issues, you MUST use the `avx:vcs-tool-manager` skill's `find-line` command:
 
-1. **Don't trust git diff line numbers alone** - diff shows relative positions, not absolute file line numbers
-2. **Find exact line numbers** using one of these methods:
-   - Use `grep -n "exact code snippet" filename` to find the line
-   - Use `Read` tool to read the file and note the line number from the output
-   - Search for unique method/function names with grep to locate the section
-3. **Verify before linking**: Always confirm the line number points to the actual code you're referencing
-4. **Use unique code snippets**: When using grep, include enough context to get a unique match
+1. **NEVER use git diff line numbers** - they show relative positions, not absolute file line numbers
+2. **ALWAYS use vcs-tool-manager's find-line command**:
+
+   ```bash
+   VCS_TOOL=$(for path in $(jq -r 'to_entries[] | .value.installLocation + "/plugin/skills/vcs-tool-manager/vcs-tool.sh"' ~/.claude/plugins/known_marketplaces.json); do [ -f "$path" ] && echo "$path" && break; done)
+
+   # Find exact line number
+   LINE_INFO=$("$VCS_TOOL" find-line "src/Service.java" "updateRouteDeviationNotification")
+   # Returns JSON with accurate line number and context
+   ```
+
+3. **Parse JSON output**: Extract the `line` field from the JSON response
+4. **Handle multiple matches**: If `match_count > 1`, use context hints or check `all_matches` array
 
 **Example - Finding Accurate Line Numbers:**
 
 ```bash
 # BAD: Using diff line numbers directly
-git diff  # Shows @@ -258,5 +258,5 @@ (relative position)
+git diff  # Shows @@ -258,5 +258,5 @@ (relative position) ❌
 
-# GOOD: Find exact line in actual file
-grep -n "updateRouteDeviationNotification" src/main/java/kz/example/Service.java
-# Output: 342:    updateRouteDeviationNotification(route);  ← Use 342!
+# GOOD: Use vcs-tool-manager find-line
+VCS_TOOL=$(...)
+RESULT=$("$VCS_TOOL" find-line "src/main/java/Service.java" "updateRouteDeviationNotification")
+LINE=$(echo "$RESULT" | jq -r '.line')
+# Output: 342 ✓
 
-# GOOD: Verify with Read tool
-# Read the file, find the issue, note the line number from cat -n output
+# GOOD: With context hint for disambiguation
+RESULT=$("$VCS_TOOL" find-line "src/Service.java" "save" "createRouteUnits")
+
+# GOOD: Find method definition
+RESULT=$("$VCS_TOOL" find-line "src/Service.java" "createRouteUnits" --method)
 ```
 
-**Never generate links without verifying line numbers first!**
+**The find-line command provides:**
+
+- ✅ Accurate absolute line numbers
+- ✅ Surrounding code context
+- ✅ Multiple match handling
+- ✅ Structured JSON output
+
+**Never generate links without using find-line first!**
 
 ## Generating Code Review Links
 
