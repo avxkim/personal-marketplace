@@ -168,6 +168,9 @@ JS/TS, Dart, Python, Java, Go, Rust, C++, SQL, Shell (security).
 
 - `file`: File path
 - `description`: Clear, actionable issue description
+  - **IMPORTANT**: Wrap code references in backticks for proper markdown formatting
+  - Examples: `methodName()`, `@Annotation`, `ClassName`, `variableName`, `"string literals"`
+  - Use backticks for: method names, class names, annotations, variables, keywords, operators
 
 **Optional Fields**:
 

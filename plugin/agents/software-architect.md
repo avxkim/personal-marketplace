@@ -154,14 +154,16 @@ When referencing architectural concerns in code, use the `avx:vcs-tool-manager` 
 - `concerns`: Array of architectural issues
   - `severity`: Critical/Major/Minor
   - `description`: Clear description of the concern
+    - **IMPORTANT**: Wrap code references in backticks for proper markdown formatting
+    - Examples: `ServiceLayer`, `@Repository`, `DatabaseService`, `methodName()`
   - `impact`: Impact on reliability/scalability/maintainability
   - `components`: Affected components/modules
 - `recommendations`: Array of prioritized fixes
   - `priority`: High/Medium/Low
-  - `description`: Concrete recommendation
+  - `description`: Concrete recommendation (use backticks for code/pattern names)
   - `tradeoffs`: Trade-offs and considerations
   - `effort`: Estimated effort (Low/Medium/High)
-- `compliance`: Array of DRY, KISS, SOLID, YAGNI observations
+- `compliance`: Array of DRY, KISS, SOLID, YAGNI observations (use backticks for code references)
 
 **Optional Fields**:
 
