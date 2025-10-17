@@ -29,6 +29,44 @@ Invoke this skill when you need to:
 
 All scripts are located in the `scripts/` directory and can be invoked via Bash.
 
+### 0. Detect Platform (REQUIRED FIRST STEP)
+
+**Script**: `detect_platform.py`
+
+**Purpose**: Automatically detects whether the current repository is on GitHub or GitLab by analyzing the git remote URL.
+
+**Usage**:
+
+```bash
+PLATFORM=$(python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/detect_platform.py)
+```
+
+**Output**:
+
+```
+github
+```
+
+or
+
+```
+gitlab
+```
+
+**How It Works**:
+
+1. Retrieves git remote URL from current repository
+2. Checks if URL contains "github.com" → returns "github"
+3. Checks if URL contains "gitlab" → returns "gitlab"
+4. Exits with error if platform cannot be detected
+
+**Exit Codes**:
+
+- 0: Platform detected successfully
+- 1: Error (could not get remote URL or unsupported platform)
+
+**IMPORTANT**: Always run this script first before calling platform-specific metadata scripts. This ensures you use the correct script for your repository.
+
 ### 1. Get GitLab MR Metadata
 
 **Script**: `get_gitlab_mr_metadata.py`
@@ -38,7 +76,7 @@ All scripts are located in the `scripts/` directory and can be invoked via Bash.
 **Usage**:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/get_gitlab_mr_metadata.py <MR_NUMBER>
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/get_gitlab_mr_metadata.py <MR_NUMBER>
 ```
 
 **Output** (JSON):
@@ -77,7 +115,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/get_gitlab_
 **Usage**:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/get_github_pr_metadata.py <PR_NUMBER>
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/get_github_pr_metadata.py <PR_NUMBER>
 ```
 
 **Output** (JSON):
@@ -107,7 +145,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/get_github_
 **Usage**:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/format_blob_url.py '<JSON_METADATA>'
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/format_blob_url.py '<JSON_METADATA>'
 ```
 
 **Input JSON** (GitLab):
@@ -159,7 +197,7 @@ https://gitlab.example.com/myorg/myrepo/-/blob/abc123def456/src/auth/login.ts#L4
 **Usage**:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/validate_url.py <URL>
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/validate_url.py <URL>
 ```
 
 **Output**:
@@ -175,43 +213,79 @@ HTTP Code: 200
 - 0: URL is valid (HTTP 200 or 302)
 - 1: URL is invalid or unreachable
 
-## Complete Workflow Example
+## Complete Workflow Examples
 
-### GitLab Merge Request Review
+### Automatic Platform Detection (RECOMMENDED)
+
+This is the recommended workflow that automatically detects whether you're working with GitHub or GitLab:
+
+```bash
+ISSUE_NUMBER="123"
+
+PLATFORM=$(python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/detect_platform.py)
+
+if [ "$PLATFORM" = "gitlab" ]; then
+    METADATA=$(python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/get_gitlab_mr_metadata.py "$ISSUE_NUMBER")
+elif [ "$PLATFORM" = "github" ]; then
+    METADATA=$(python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/get_github_pr_metadata.py "$ISSUE_NUMBER")
+else
+    echo "Error: Unsupported platform" >&2
+    exit 1
+fi
+
+FILE_PATH="src/auth/login.ts"
+LINE_NUMBER=42
+
+URL_INPUT=$(echo "$METADATA" | jq -c ". + {platform: \"$PLATFORM\", file_path: \"$FILE_PATH\", line_number: $LINE_NUMBER}")
+
+URL=$(python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/format_blob_url.py "$URL_INPUT")
+
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/validate_url.py "$URL"
+```
+
+### Manual GitLab Merge Request Review
+
+If you already know you're working with GitLab:
 
 ```bash
 MR_NUMBER="123"
 
-METADATA=$(python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/get_gitlab_mr_metadata.py "$MR_NUMBER")
+METADATA=$(python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/get_gitlab_mr_metadata.py "$MR_NUMBER")
 
 FILE_PATH="src/auth/login.ts"
 LINE_NUMBER=42
 
 URL_INPUT=$(echo "$METADATA" | jq -c ". + {platform: \"gitlab\", file_path: \"$FILE_PATH\", line_number: $LINE_NUMBER}")
 
-URL=$(python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/format_blob_url.py "$URL_INPUT")
+URL=$(python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/format_blob_url.py "$URL_INPUT")
 
-python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/validate_url.py "$URL"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/validate_url.py "$URL"
 ```
 
-### GitHub Pull Request Review
+### Manual GitHub Pull Request Review
+
+If you already know you're working with GitHub:
 
 ```bash
 PR_NUMBER="456"
 
-METADATA=$(python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/get_github_pr_metadata.py "$PR_NUMBER")
+METADATA=$(python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/get_github_pr_metadata.py "$PR_NUMBER")
 
 FILE_PATH="src/auth/login.ts"
 LINE_NUMBER=42
 
 URL_INPUT=$(echo "$METADATA" | jq -c ". + {platform: \"github\", file_path: \"$FILE_PATH\", line_number: $LINE_NUMBER}")
 
-URL=$(python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/format_blob_url.py "$URL_INPUT")
+URL=$(python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/format_blob_url.py "$URL_INPUT")
 
-python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/validate_url.py "$URL"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/validate_url.py "$URL"
 ```
 
 ## Common Pitfalls to Avoid
+
+### ❌ Not Detecting Platform First
+
+Always use `detect_platform.py` before calling platform-specific scripts. Don't assume which VCS platform you're on.
 
 ### ❌ Using Branch Names with Special Characters
 
@@ -272,18 +346,23 @@ Error: file_path is required
 
 ## Best Practices
 
-1. **Always Test Links**: Run `validate_url.py` before including links in comments
-2. **Use Commit SHA for Complex Branches**: If branch has special chars, prefer SHA
-3. **Verify Remote**: Ensure you're in correct git repository before running scripts
-4. **Check CLI Tools**: Run `glab --version` or `gh --version` to verify installation
-5. **Handle Errors Gracefully**: All scripts output JSON or structured text for parsing
-6. **Self-Hosted GitLab**: No need to manually set `GITLAB_HOST` - scripts auto-detect from git remote
+1. **Always Detect Platform First**: Run `detect_platform.py` before calling platform-specific scripts to ensure you're using the correct tool
+2. **Always Test Links**: Run `validate_url.py` before including links in comments
+3. **Use Commit SHA for Complex Branches**: If branch has special chars, prefer SHA
+4. **Verify Remote**: Ensure you're in correct git repository before running scripts
+5. **Check CLI Tools**: Run `glab --version` or `gh --version` to verify installation
+6. **Handle Errors Gracefully**: All scripts output JSON or structured text for parsing
+7. **Self-Hosted GitLab**: No need to manually set `GITLAB_HOST` - scripts auto-detect from git remote
 
 ## Troubleshooting
 
 **Issue**: "Error: Could not get git remote URL"
 
 - **Solution**: Ensure you're in a git repository with configured remote
+
+**Issue**: "404 Not Found" when fetching MR/PR metadata
+
+- **Solution**: You may be using the wrong platform script (e.g., trying to fetch GitLab MR from a GitHub repository). Always run `detect_platform.py` first to identify the correct platform
 
 **Issue**: "Error running glab mr view"
 
