@@ -1,9 +1,0 @@
-{
-  "name": "personal-plugin",
-  "description": "My personal agents, commands, hooks, etc",
-  "version": "1.0.0",
-  "author": {
-    "name": "Alexander Kim"
-  },
-  "hooks": "./hooks/hooks.json"
-}
