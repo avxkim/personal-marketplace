@@ -201,9 +201,9 @@ gitlab
 https://gitlab.example.com/myorg/myrepo/-/blob/abc123def456/src/auth/login.ts#L42
 ```
 
-**Special Character Handling**:
+**URL Generation**:
 
-- Automatically uses commit SHA instead of branch name if branch contains `#`, `%`, or spaces
+- **Always uses commit SHA** for reliable, permanent links that won't break after branch deletion or updates
 - URL-encodes file paths properly
 
 ### 4. Validate URL
@@ -401,13 +401,15 @@ URL=$("$VCS_TOOL" format-url "$URL_INPUT")
 
 Always use `detect_platform.py` before calling platform-specific scripts. Don't assume which VCS platform you're on.
 
-### ❌ Using Branch Names with Special Characters
+### ❌ Using Branch Names in URLs (DEPRECATED)
 
-```
-https://gitlab.com/org/repo/-/blob/feature/TASK-123/path/file.ts#L10
-```
+The script previously allowed branch names in URLs, but this caused reliability issues:
 
-The `#` in branch names breaks URL anchors. Solution: Use commit SHA.
+- Branch names with `#` break URL anchors
+- Branches can be deleted after merge
+- Branches receive new commits, making line numbers incorrect
+
+**Solution**: The script now **always uses commit SHA** for all generated URLs, ensuring permanent, reliable links.
 
 ### ❌ Guessing Branch from PR/MR Title
 

@@ -6,10 +6,6 @@ from typing import Optional
 from urllib.parse import quote
 
 
-def has_special_chars(branch_name: str) -> bool:
-    return any(char in branch_name for char in ["#", "%", " "])
-
-
 def format_gitlab_url(
     host: str,
     namespace: str,
@@ -19,12 +15,9 @@ def format_gitlab_url(
     sha: str,
     branch: str
 ) -> str:
-    use_sha = has_special_chars(branch)
-    ref = sha if use_sha else branch
-
     encoded_path = quote(file_path, safe="/")
 
-    url = f"https://{host}/{namespace}/{repo}/-/blob/{ref}/{encoded_path}"
+    url = f"https://{host}/{namespace}/{repo}/-/blob/{sha}/{encoded_path}"
 
     if line_number > 0:
         url += f"#L{line_number}"
@@ -40,12 +33,9 @@ def format_github_url(
     sha: str,
     branch: str
 ) -> str:
-    use_sha = has_special_chars(branch)
-    ref = sha if use_sha else branch
-
     encoded_path = quote(file_path, safe="/")
 
-    url = f"https://github.com/{owner}/{repo}/blob/{ref}/{encoded_path}"
+    url = f"https://github.com/{owner}/{repo}/blob/{sha}/{encoded_path}"
 
     if line_number > 0:
         url += f"#L{line_number}"
