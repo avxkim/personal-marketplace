@@ -134,26 +134,23 @@ $ARCH_COMMENT"
 
 **5. Post Review Comment**
 
-After formatting, **ask user** if they want to publish the comment to MR/PR:
+After formatting, **ask user** if they want to publish the comment to MR/PR.
+
+**IMPORTANT**: Always use the `post-comment` command (never use `glab` or `gh` directly):
 
 ```bash
-# Using vcs-tool post-comment command (recommended)
 echo "$FINAL_COMMENT" | "$VCS_TOOL" post-comment "$PLATFORM" "$ISSUE_NUMBER" -
 ```
 
-**Alternative - Direct CLI usage**:
+**Why use post-comment instead of glab/gh directly?**
 
-```bash
-# GitLab
-glab mr note <MR_NUMBER> -m "$FINAL_COMMENT"
-
-# GitHub
-gh pr comment <PR_NUMBER> --body "$FINAL_COMMENT"
-```
+- ✅ Unified interface for both GitLab and GitHub
+- ✅ Proper stdin handling for long comments (no escaping issues)
+- ✅ Consistent error messages
+- ✅ Centralized with other VCS operations
 
 **Important Notes**:
 
-- **Recommended**: Use `post-comment` command for unified interface
-- For long comments, always use stdin with `-` to avoid escaping issues
-- DON'T publish automatically - always ask first!
-- The `post-comment` command handles platform detection automatically
+- Always use stdin with `-` for formatted reviews (they're long and multiline)
+- DON'T publish automatically - always ask user first!
+- The command handles platform differences automatically
