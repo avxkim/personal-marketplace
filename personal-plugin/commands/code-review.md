@@ -4,8 +4,8 @@
 - ALWAYS delegate review to `code-reviewer` agent
 - If MR/PR has notes/comments already, analyze them and verify if issues were fixed
 - Use `glab` or `gh` CLI tools to fetch MR/PR details and generate exact line links
-- The code-reviewer agent will provide PASS/FAIL verdict
-` `software-architect` agent should run in parallel with `code-reviewer`
+- You should fetch the MR/PR diff and metadata before delegating to the agent, so it has all the context needed to generate accurate links from the start
+- The code-reviewer agent will provide PASS/FAIL verdict, `software-architect` agent should run in parallel with `code-reviewer`
 
 ## Review Workflow:
 1. **Determine Review Scope**
