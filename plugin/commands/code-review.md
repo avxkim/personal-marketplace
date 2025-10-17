@@ -20,24 +20,26 @@ PLATFORM=$("$VCS_TOOL" detect-platform)
 
 Extract MR/PR number from $ARGUMENTS (URL or number)
 
+**IMPORTANT**: CLI tools update frequently. ALWAYS run `--help` for the specific command BEFORE using it to verify current syntax.
+
 **GitLab** (if PLATFORM=gitlab):
 
 ```bash
-# Fetch MR details
-glab mr view <MR_NUMBER> --output json
+# Fetch MR details with comments in one call
+glab mr view <MR_NUMBER> --comments --output json
 
-# Fetch existing comments
-glab mr note list <MR_NUMBER> --output json
+# If you're NOT in the repo directory, add --repo flag:
+glab mr view <MR_NUMBER> --comments --output json --repo <owner>/<repo>
 ```
 
 **GitHub** (if PLATFORM=github):
 
 ```bash
-# Fetch PR details
-gh pr view <PR_NUMBER> --json number,title,body,headRefName,headRefOid,url
+# Fetch PR details with comments
+gh pr view <PR_NUMBER> --json number,title,body,headRefName,headRefOid,url,comments
 
-# Fetch existing comments
-gh pr view <PR_NUMBER> --json comments
+# If you're NOT in the repo directory, add --repo flag:
+gh pr view <PR_NUMBER> --json number,title,body,headRefName,headRefOid,url,comments --repo <owner>/<repo>
 ```
 
 **3. Provide Context to code-reviewer Agent**
