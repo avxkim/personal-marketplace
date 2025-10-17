@@ -38,7 +38,7 @@ All scripts are located in the `scripts/` directory and can be invoked via Bash.
 **Usage**:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/get_gitlab_mr_metadata.py <MR_NUMBER>
+python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/get_gitlab_mr_metadata.py <MR_NUMBER>
 ```
 
 **Output** (JSON):
@@ -77,7 +77,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/get_gitlab_mr_meta
 **Usage**:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/get_github_pr_metadata.py <PR_NUMBER>
+python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/get_github_pr_metadata.py <PR_NUMBER>
 ```
 
 **Output** (JSON):
@@ -107,7 +107,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/get_github_pr_meta
 **Usage**:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/format_blob_url.py '<JSON_METADATA>'
+python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/format_blob_url.py '<JSON_METADATA>'
 ```
 
 **Input JSON** (GitLab):
@@ -159,7 +159,7 @@ https://gitlab.example.com/myorg/myrepo/-/blob/abc123def456/src/auth/login.ts#L4
 **Usage**:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/validate_url.py <URL>
+python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/validate_url.py <URL>
 ```
 
 **Output**:
@@ -182,16 +182,16 @@ HTTP Code: 200
 ```bash
 MR_NUMBER="123"
 
-METADATA=$(python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/get_gitlab_mr_metadata.py "$MR_NUMBER")
+METADATA=$(python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/get_gitlab_mr_metadata.py "$MR_NUMBER")
 
 FILE_PATH="src/auth/login.ts"
 LINE_NUMBER=42
 
 URL_INPUT=$(echo "$METADATA" | jq -c ". + {platform: \"gitlab\", file_path: \"$FILE_PATH\", line_number: $LINE_NUMBER}")
 
-URL=$(python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/format_blob_url.py "$URL_INPUT")
+URL=$(python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/format_blob_url.py "$URL_INPUT")
 
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/validate_url.py "$URL"
+python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/validate_url.py "$URL"
 ```
 
 ### GitHub Pull Request Review
@@ -199,16 +199,16 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/validate_url.py "$
 ```bash
 PR_NUMBER="456"
 
-METADATA=$(python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/get_github_pr_metadata.py "$PR_NUMBER")
+METADATA=$(python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/get_github_pr_metadata.py "$PR_NUMBER")
 
 FILE_PATH="src/auth/login.ts"
 LINE_NUMBER=42
 
 URL_INPUT=$(echo "$METADATA" | jq -c ". + {platform: \"github\", file_path: \"$FILE_PATH\", line_number: $LINE_NUMBER}")
 
-URL=$(python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/format_blob_url.py "$URL_INPUT")
+URL=$(python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/format_blob_url.py "$URL_INPUT")
 
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/vcs-tool-manager/scripts/validate_url.py "$URL"
+python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/validate_url.py "$URL"
 ```
 
 ## Common Pitfalls to Avoid
