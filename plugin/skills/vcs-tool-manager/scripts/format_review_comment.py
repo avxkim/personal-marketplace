@@ -14,15 +14,18 @@ def format_code_review(data: Dict) -> str:
     if critical:
         lines.append("## 🔴 Critical Issues (Must Fix)\n")
         for idx, issue in enumerate(critical, 1):
-            file = issue.get("file", "Unknown")
+            file_path = issue.get("file", "Unknown")
             line = issue.get("line")
             url = issue.get("url", "")
             desc = issue.get("description", "")
 
+            # Extract just the filename from full path
+            filename = file_path.split("/")[-1] if "/" in file_path else file_path
+
             if line and url:
-                lines.append(f'{idx}. **{file}** ([{file}:{line}]({url})):')
+                lines.append(f'{idx}. **{filename}** ([{file_path}:{line}]({url})):')
             else:
-                lines.append(f'{idx}. **{file}**:')
+                lines.append(f'{idx}. **{filename}** ({file_path}):')
 
             lines.append(f'   {desc}\n')
 
@@ -33,15 +36,18 @@ def format_code_review(data: Dict) -> str:
     if warnings:
         lines.append("## 🟡 Warnings (Should Fix)\n")
         for idx, issue in enumerate(warnings, 1):
-            file = issue.get("file", "Unknown")
+            file_path = issue.get("file", "Unknown")
             line = issue.get("line")
             url = issue.get("url", "")
             desc = issue.get("description", "")
 
+            # Extract just the filename from full path
+            filename = file_path.split("/")[-1] if "/" in file_path else file_path
+
             if line and url:
-                lines.append(f'{idx}. **{file}** ([{file}:{line}]({url})):')
+                lines.append(f'{idx}. **{filename}** ([{file_path}:{line}]({url})):')
             else:
-                lines.append(f'{idx}. **{file}**:')
+                lines.append(f'{idx}. **{filename}** ({file_path}):')
 
             lines.append(f'   {desc}\n')
 
@@ -52,15 +58,18 @@ def format_code_review(data: Dict) -> str:
     if suggestions:
         lines.append("## 🟢 Suggestions (Consider)\n")
         for idx, issue in enumerate(suggestions, 1):
-            file = issue.get("file", "Unknown")
+            file_path = issue.get("file", "Unknown")
             line = issue.get("line")
             url = issue.get("url", "")
             desc = issue.get("description", "")
 
+            # Extract just the filename from full path
+            filename = file_path.split("/")[-1] if "/" in file_path else file_path
+
             if line and url:
-                lines.append(f'{idx}. **{file}** ([{file}:{line}]({url})):')
+                lines.append(f'{idx}. **{filename}** ([{file_path}:{line}]({url})):')
             else:
-                lines.append(f'{idx}. **{file}**:')
+                lines.append(f'{idx}. **{filename}** ({file_path}):')
 
             lines.append(f'   {desc}\n')
 
@@ -100,7 +109,7 @@ def format_architecture_review(data: Dict) -> str:
             desc = concern.get("description", "")
             impact = concern.get("impact", "")
             components = concern.get("components", [])
-            file = concern.get("file")
+            file_path = concern.get("file")
             line = concern.get("line")
             url = concern.get("url")
 
@@ -120,10 +129,14 @@ def format_architecture_review(data: Dict) -> str:
                 components_str = ", ".join(components)
                 lines.append(f"   - **Affected Components**: {components_str}")
 
-            if file and line and url:
-                lines.append(f"   - **Location**: [{file}:{line}]({url})")
-            elif file:
-                lines.append(f"   - **Location**: {file}")
+            if file_path:
+                # Extract just the filename from full path
+                filename = file_path.split("/")[-1] if "/" in file_path else file_path
+
+                if line and url:
+                    lines.append(f"   - **Location**: {filename} ([{file_path}:{line}]({url}))")
+                else:
+                    lines.append(f"   - **Location**: {filename} ({file_path})")
 
             lines.append("")
 
