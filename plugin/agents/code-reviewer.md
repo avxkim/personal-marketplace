@@ -121,21 +121,60 @@ JS/TS, Dart, Python, Java, Go, Rust, C++, SQL, Shell (security).
 
 ## Output Format
 
-### 🔴 Critical (MUST FIX / blocks approval)
+**IMPORTANT**: Output your findings as **structured JSON**, not markdown. The `/code-review` command will format it consistently using the `format-review` script.
 
-Security issues, breaking changes, data loss, critical bugs.
+**JSON Structure**:
 
-### 🟡 Warnings (SHOULD FIX)
+```json
+{
+  "type": "code",
+  "verdict": "PASS" or "FAIL",
+  "critical": [
+    {
+      "file": "path/to/file.java",
+      "line": 342,
+      "url": "https://gitlab.com/.../file.java#L342",
+      "description": "Issue description"
+    }
+  ],
+  "warnings": [
+    {
+      "file": "path/to/file.java",
+      "line": 89,
+      "url": "https://gitlab.com/.../file.java#L89",
+      "description": "Issue description"
+    }
+  ],
+  "suggestions": [
+    {
+      "file": "path/to/file.java",
+      "line": 25,
+      "url": "https://gitlab.com/.../file.java#L25",
+      "description": "Suggestion description"
+    }
+  ]
+}
+```
 
-Quality issues, perf risks, missing error handling.
+**Severity Guidelines**:
 
-### 🟢 Suggestions (CONSIDER)
+- **critical**: Security issues, breaking changes, data loss, critical bugs (blocks approval)
+- **warnings**: Quality issues, performance risks, missing error handling (should fix)
+- **suggestions**: Style improvements, refactors, docs/tests enhancements (consider)
 
-Style, refactors, docs/tests improvements.
+**Required Fields**:
 
-### ✅ Final Verdict
+- `file`: File path
+- `description`: Clear, actionable issue description
 
-**PASS** — ready to merge  
-**FAIL** — fix criticals first
+**Optional Fields**:
 
-> Be thorough but concise. Focus on what matters. Do **not** estimate time. Never include “Claude code” markers in comments.
+- `line`: Line number (use vcs-tool-manager's `find-line` command for accuracy)
+- `url`: Clickable link to exact code location
+
+**Verdict**:
+
+- **PASS**: Ready to merge (no critical issues)
+- **FAIL**: Requires fixes before merge (critical issues present)
+
+> Be thorough but concise. Focus on what matters. Do **not** estimate time. Never include "Claude code" markers in comments.

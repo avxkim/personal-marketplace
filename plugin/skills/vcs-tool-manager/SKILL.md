@@ -321,6 +321,172 @@ HTTP Code: 200
 - ✅ Specifically designed for code review workflows
 - ✅ Exit codes for error handling
 
+### 6. Format Review Comment (RECOMMENDED for Consistent Output)
+
+**Script**: `format_review_comment.py`
+
+**Purpose**: Generates consistently formatted code review and architecture review comments from structured JSON input. Ensures identical formatting every time, eliminating variations in manual template interpretation.
+
+**Usage**:
+
+```bash
+"$VCS_TOOL" format-review <JSON_DATA>
+```
+
+**Parameters**:
+
+- `JSON_DATA`: JSON string containing review data with `type` field ("code" or "architecture")
+
+**Code Review Input JSON**:
+
+```json
+{
+  "type": "code",
+  "verdict": "PASS",
+  "critical": [
+    {
+      "file": "src/Service.java",
+      "line": 342,
+      "url": "https://gitlab.com/.../Service.java#L342",
+      "description": "Null pointer risk without validation"
+    }
+  ],
+  "warnings": [
+    {
+      "file": "src/Controller.java",
+      "line": 89,
+      "url": "https://gitlab.com/.../Controller.java#L89",
+      "description": "Missing error handling"
+    }
+  ],
+  "suggestions": []
+}
+```
+
+**Code Review Output**:
+
+```markdown
+# Code Review Summary 🔍
+
+## 🔴 Critical Issues (Must Fix)
+
+1. **src/Service.java** ([src/Service.java:342](https://gitlab.com/.../Service.java#L342)):
+   Null pointer risk without validation
+
+---
+
+## 🟡 Warnings (Should Fix)
+
+1. **src/Controller.java** ([src/Controller.java:89](https://gitlab.com/.../Controller.java#L89)):
+   Missing error handling
+
+---
+
+## ✅ Verdict
+
+**PASS** ✔️ - Ready for merge
+```
+
+**Architecture Review Input JSON**:
+
+```json
+{
+  "type": "architecture",
+  "strengths": [
+    "Clear separation of concerns",
+    "Repository pattern correctly applied"
+  ],
+  "concerns": [
+    {
+      "severity": "Critical",
+      "description": "Direct database access in controller",
+      "impact": "Tight coupling, difficult to test",
+      "components": ["UserController", "DatabaseService"],
+      "file": "src/controllers/UserController.java",
+      "line": 45,
+      "url": "https://gitlab.com/.../UserController.java#L45"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "High",
+      "description": "Introduce service layer",
+      "tradeoffs": "More abstraction but better testability",
+      "effort": "Medium"
+    }
+  ],
+  "compliance": [
+    "Violates SRP in controller",
+    "SOLID principles mostly followed"
+  ]
+}
+```
+
+**Architecture Review Output**:
+
+```markdown
+# Architecture Assessment 🏗️
+
+## ✅ Strengths
+
+- Clear separation of concerns
+- Repository pattern correctly applied
+
+---
+
+## ⚠️ Architectural Concerns
+
+1. 🔴 **Critical**: Direct database access in controller
+   - **Impact**: Tight coupling, difficult to test
+   - **Affected Components**: UserController, DatabaseService
+   - **Location**: [src/controllers/UserController.java:45](https://gitlab.com/.../UserController.java#L45)
+
+---
+
+## 💡 Recommendations
+
+1. 🔴 **High Priority**: Introduce service layer
+   - **Trade-offs**: More abstraction but better testability
+   - **Effort**: Medium
+
+---
+
+## 📋 Architecture Compliance
+
+- Violates SRP in controller
+- SOLID principles mostly followed
+```
+
+**Exit Codes**:
+
+- 0: Successfully formatted
+- 1: JSON parse error or invalid type
+
+**Features**:
+
+- ✅ **100% Consistent formatting** - identical output for same input
+- ✅ **Automatic section skipping** - empty sections are omitted
+- ✅ **Validated structure** - ensures required fields exist
+- ✅ **Severity emojis** - visual indicators for priority (🔴🟠🟡🟢)
+- ✅ **File links** - clickable links to exact code locations
+- ✅ **Supports both review types** - code and architecture
+
+**Why Use This?**
+
+Without this script, Claude interprets markdown templates differently each time, leading to:
+
+- ❌ Inconsistent formatting
+- ❌ Missing sections
+- ❌ Different emoji usage
+- ❌ Varying link formats
+
+With this script:
+
+- ✅ Agents output structured JSON
+- ✅ Script formats consistently
+- ✅ Easy to update templates (change Python, not agent instructions)
+- ✅ Guaranteed identical output
+
 ## Complete Workflow Examples
 
 ### Automatic Platform Detection (RECOMMENDED)

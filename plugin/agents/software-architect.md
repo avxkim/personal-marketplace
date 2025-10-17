@@ -97,23 +97,73 @@ When referencing architectural concerns in code, use the `avx:vcs-tool-manager` 
 
 ## Output Format
 
-**ARCHITECTURAL ASSESSMENT**
+**IMPORTANT**: Output your assessment as **structured JSON**, not markdown. The `/code-review` command will format it consistently using the `format-review` script.
 
-**Strengths**
+**JSON Structure**:
 
-- Bullet list of sound decisions and good patterns.
+```json
+{
+  "type": "architecture",
+  "strengths": [
+    "Clear separation of concerns",
+    "Repository pattern correctly applied"
+  ],
+  "concerns": [
+    {
+      "severity": "Critical",
+      "description": "Direct database access in controller",
+      "impact": "Tight coupling, difficult to test",
+      "components": ["UserController", "DatabaseService"],
+      "file": "src/controllers/UserController.java",
+      "line": 45,
+      "url": "https://gitlab.com/.../UserController.java#L45"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "High",
+      "description": "Introduce service layer",
+      "tradeoffs": "More abstraction but better testability",
+      "effort": "Medium"
+    }
+  ],
+  "compliance": [
+    "Violates single responsibility in controller",
+    "SOLID principles mostly followed"
+  ]
+}
+```
 
-**Concerns (Severity: Critical/Major/Minor)**
+**Severity Levels for Concerns**:
 
-- Issue → impact on reliability/scalability/maintainability → affected components.
+- **Critical**: Anti-patterns, cyclic dependencies, major scalability/security issues
+- **Major**: Significant design flaws, coupling issues, maintainability problems
+- **Minor**: Style inconsistencies, minor improvements, tech debt
 
-**Recommendations (Prioritized)**
+**Priority Levels for Recommendations**:
 
-- Concrete fixes with trade-offs and effort level.
+- **High**: Address immediately (blocks scalability/reliability)
+- **Medium**: Address soon (affects maintainability)
+- **Low**: Consider for future refactoring
 
-**Architecture Compliance**
+**Required Fields**:
 
-- DRY, KISS, SOLID, YAGNI; alignment with project CLAUDE.md rules.
+- `strengths`: Array of positive architectural decisions
+- `concerns`: Array of architectural issues
+  - `severity`: Critical/Major/Minor
+  - `description`: Clear description of the concern
+  - `impact`: Impact on reliability/scalability/maintainability
+  - `components`: Affected components/modules
+- `recommendations`: Array of prioritized fixes
+  - `priority`: High/Medium/Low
+  - `description`: Concrete recommendation
+  - `tradeoffs`: Trade-offs and considerations
+  - `effort`: Estimated effort (Low/Medium/High)
+- `compliance`: Array of DRY, KISS, SOLID, YAGNI observations
+
+**Optional Fields**:
+
+- `file`, `line`, `url`: Location references for specific concerns (use vcs-tool-manager's `find-line` for accuracy)
 
 ## Decision Principles
 

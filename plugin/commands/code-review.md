@@ -69,49 +69,48 @@ Pass the following to code-reviewer agent in your delegation prompt:
    - Check if PR/MR already exists: `gh pr view` or `glab mr view``
    - Identify file types and what reviews apply
 
-After thorough review, ask if you should write a comment on the MR/PR page.
-Don't add "reviewed by", review dates in the footer of the comment.
-Use the following comment template based on code-reviewer agent output (STRICTLY FOLLOW THIS TEMPLATE!):
+## After Agent Reviews Complete:
 
-# Code Review Summary 🔍
+**4. Format Review Comments**
 
-## 🔴 Critical Issues (Must Fix)
+Both `code-reviewer` and `software-architect` agents output **structured JSON**. Use the `format-review` script to generate consistent markdown comments:
 
-1. **Filename** ([FILENAME:LINE](https://gitdomain.com)):
-   Issue description
+```bash
+VCS_TOOL=$(for path in $(jq -r 'to_entries[] | .value.installLocation + "/plugin/skills/vcs-tool-manager/vcs-tool.sh"' ~/.claude/plugins/known_marketplaces.json); do [ -f "$path" ] && echo "$path" && break; done)
 
----
+# Format code review JSON
+CODE_REVIEW_JSON='<JSON from code-reviewer agent>'
+CODE_COMMENT=$("$VCS_TOOL" format-review "$CODE_REVIEW_JSON")
 
-## 🟡 Warnings (Should Fix)
+# Format architecture review JSON
+ARCH_REVIEW_JSON='<JSON from software-architect agent>'
+ARCH_COMMENT=$("$VCS_TOOL" format-review "$ARCH_REVIEW_JSON")
 
-1. **Filename** ([FILENAME:LINE](https://gitdomain.com)):
-   Issue description
-
----
-
-## 🟢 Suggestions (Consider)
-
-1. **Filename** ([FILENAME:LINE](https://gitdomain.com)):
-   Issue description
+# Combine both comments
+FINAL_COMMENT="$CODE_COMMENT
 
 ---
 
-## ✅ Verdict
+$ARCH_COMMENT"
+```
 
-**PASS** ✔️ - Ready for merge
-OR
-**FAIL** ❌ - Requires fixes before merge
+**Why Use format-review Script?**
 
-## Post review actions
+- ✅ **100% Consistent formatting** - identical output every time
+- ✅ **No template interpretation** - agents output JSON, script formats
+- ✅ **Automatic section skipping** - empty sections omitted
+- ✅ **Validated structure** - ensures required fields exist
 
-- When `code-review` is finished review process, ask me if i want to publish that comment, DON'T publish automatically!
+**5. Post Review Comment**
 
-## Template guidelines
+After formatting, **ask user** if they want to publish the comment to MR/PR:
 
-- **Filename** - must be in bold text, not as heading
-- **FILENAME:LINE** - must be a clickable link to exact line (e.g., https://gitlab.com/repo/file.js#L42). The `code-reviewer` agent uses the `find-line` command to get verified, accurate line numbers (NOT git diff positions), then generates links via `avx:vcs-tool-manager` skill.
-- Link should point to the source branch being reviewed (the skill handles this automatically)
-- Issue descriptions should be clear and actionable
-- Only include sections that have issues (skip empty sections)
-- Use emojis for visual clarity and better readability
-- If all checks pass with no issues, just post the PASS verdict
+```bash
+# GitLab
+glab mr note <MR_NUMBER> -m "$FINAL_COMMENT"
+
+# GitHub
+gh pr comment <PR_NUMBER> --body "$FINAL_COMMENT"
+```
+
+**IMPORTANT**: Don't add "reviewed by" or review dates in the footer. DON'T publish automatically - always ask first!
