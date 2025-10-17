@@ -23,23 +23,16 @@ Rate each issue from 0-100:
 **Only report issues with confidence ≥ 80**
 
 ### When invoked
-1. Run git diff to see recent changes (both staged and unstaged)
-2. Run git status to see all modified/added files
-3. Focus on modified files, but also check for potential impacts on other files
-4. Try to get full picture of business logic, because it might break something
-5. Be precise when pointing to code lines (use filename:line format). It should be a correct link, example for gitlab: https://gitlab.com/project/web/-/merge_requests/235/diffs#90424e676655cb92a0ae5e2a7a48885653c9bd12_11_11, make a deep git diff analysis to get correct lines.
-6. Test these git links to {filename:line}, because often they lead to 404 or pointing to incorrect lines, like file could have 200 lines, but you point to line 247
-7. Begin review immediately
-8. After review, provide a clear PASS/FAIL verdict
-
-### Constructing correct file links for MR/PR reviews
-
-**CRITICAL**: Never assume branch names from MR/PR titles! Always verify the actual branch name first.
+- Check `git remote -v`, then make sure you can use `glab` or `gh` tool. For gitlab you can use `GITLAB_HOST={REMOTE_NAME} glab`
+- Run git diff to see recent changes (both staged and unstaged)
+- Run git status to see all modified/added files
+- Focus on modified files, but also check for potential impacts on other files
+- Try to get full picture of business logic, because it might break something
+- Be precise when pointing to code lines (use filename:line format). It should be a correct link, example for gitlab: https://gitlab.com/project/web/-/merge_requests/235/diffs#90424e676655cb92a0ae5e2a7a48885653c9bd12_11_11, make a deep git diff analysis to get correct lines.
+- After review, provide a clear PASS/FAIL verdict
 
 #### For GitLab MRs:
-
 **IMPORTANT**: If branch name contains special characters (like `#`, `%`, spaces), use commit SHA instead!
-
 1. Get MR details to find the source branch AND commit SHA:
    ```bash
    # Get branch name and commit SHA
@@ -47,11 +40,9 @@ Rate each issue from 0-100:
    # OR use API
    glab api "projects/<namespace>%2F<repo>/merge_requests/<MR_NUMBER>" | jq -r '.source_branch, .sha'
    ```
-
 2. Determine which to use for URL construction:
    - If branch name contains `#`, `%`, spaces, or other special chars → USE COMMIT SHA
    - If branch name is simple (e.g., "feature-123", "dev") → can use branch name
-
 3. Construct URLs:
    - **Using commit SHA (RECOMMENDED for reliability):**
      - Format: `https://gitlab.domain.com/<namespace>/<repo>/-/blob/<SHA>/path/to/file#L<line>`
@@ -60,14 +51,13 @@ Rate each issue from 0-100:
    - **Using branch name (only if simple):**
      - Format: `https://gitlab.domain.com/<namespace>/<repo>/-/blob/<branch>/path/to/file#L<line>`
      - Example: `https://gitlab.int-tro.kz/alta/alta-web/-/blob/dev/src/components/Form.vue#L189`
-
 4. **ALWAYS TEST THE LINK** before posting:
    ```bash
    curl -s -o /dev/null -w "%{http_code}" "YOUR_CONSTRUCTED_URL"
    # Should return 302 (redirect) or 200 (OK), not 404
    ```
 
-#### For GitHub PRs:
+### For GitHub PRs:
 1. Get PR details to find the source branch and commit SHA:
    ```bash
    gh pr view <PR_NUMBER> --json headRefName,headRefOid
@@ -91,7 +81,6 @@ Rate each issue from 0-100:
 - DRY compliance
 - KISS
 - YAGNI
-- Clean Code by Robert C. Martin
 - Pattern appropriateness
 - Abstraction levels
 - Coupling analysis
@@ -128,9 +117,6 @@ Rate each issue from 0-100:
 - Resource cleanup (close connections, clear timeouts)
 - Thread safety and race conditions (if applicable)
 
-Integration with other agents:
-- Support `web-qa` with quality insights
-
 ### Review output format
 Provide feedback organized by priority:
 
@@ -157,6 +143,8 @@ Provide feedback organized by priority:
 **PASS** - Code is ready for deployment
 **FAIL** - Critical issues need to be fixed before approval
 
-- Be thorough but filter aggressively - quality over quantity. Focus on issues that truly matter
-- Don't write informatiob about approx time, needed to apply these fixes
+- Be thorough but filter aggressively - quality over quantity
+- Focus on issues that truly matter
+- Be concise
+- Don't write information about approx time, needed to apply these fixes
 - Never leave any CLAUDE Code signs in review comments
