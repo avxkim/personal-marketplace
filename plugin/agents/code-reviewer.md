@@ -133,10 +133,6 @@ Quality issues, perf risks, missing error handling.
 
 Style, refactors, docs/tests improvements.
 
-### 📝 Existing Comment Status
-
-Only if MR/PR already has comments—note whether addressed.
-
 ### ✅ Final Verdict
 
 **PASS** — ready to merge  

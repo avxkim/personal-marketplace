@@ -3,10 +3,50 @@
 - MR/PR url: $ARGUMENTS
 - **Working Directory**: Agents will check current directory first and only clone if necessary
 - ALWAYS delegate review to `code-reviewer` agent with the MR/PR URL from $ARGUMENTS
-- The `code-reviewer` agent will fetch MR/PR details, diff, and any existing comments itself
 - The `code-reviewer` agent will use the `avx:vcs-tool-manager` skill's `find-line` command to get accurate line numbers and generate validated links
 - **Line Number Resolution**: Uses Python-based `find-line` tool (NOT git diff positions) to ensure links point to correct code
 - The code-reviewer agent will provide PASS/FAIL verdict, `software-architect` agent should run in parallel with `code-reviewer`
+
+## Before Delegating to Agents:
+
+**1. Detect Platform**
+
+```bash
+VCS_TOOL=$(for path in $(jq -r 'to_entries[] | .value.installLocation + "/plugin/skills/vcs-tool-manager/vcs-tool.sh"' ~/.claude/plugins/known_marketplaces.json); do [ -f "$path" ] && echo "$path" && break; done)
+PLATFORM=$("$VCS_TOOL" detect-platform)
+```
+
+**2. Fetch MR/PR Details and Existing Comments**
+
+Extract MR/PR number from $ARGUMENTS (URL or number)
+
+**GitLab** (if PLATFORM=gitlab):
+
+```bash
+# Fetch MR details
+glab mr view <MR_NUMBER> --output json
+
+# Fetch existing comments
+glab mr note list <MR_NUMBER> --output json
+```
+
+**GitHub** (if PLATFORM=github):
+
+```bash
+# Fetch PR details
+gh pr view <PR_NUMBER> --json number,title,body,headRefName,headRefOid,url
+
+# Fetch existing comments
+gh pr view <PR_NUMBER> --json comments
+```
+
+**3. Provide Context to code-reviewer Agent**
+
+Pass the following to code-reviewer agent in your delegation prompt:
+
+- MR/PR metadata (number, title, source branch, commit SHA)
+- List of existing comments (if any) with their content and line references
+- Request agent to verify if existing comments have been addressed in current code
 
 ## Review Workflow:
 
