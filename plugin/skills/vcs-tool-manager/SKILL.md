@@ -25,9 +25,24 @@ Invoke this skill when you need to:
 - Ensure code review links are valid before posting
 - Handle complex branch names with special characters
 
+## Finding the Plugin Location
+
+**IMPORTANT**: Before using this skill's scripts, determine the plugin installation location:
+
+```bash
+PLUGIN_ROOT=$(jq -r '."personal-marketplace".installLocation // empty' ~/.claude/plugins/known_marketplaces.json)
+if [ -z "$PLUGIN_ROOT" ]; then
+    echo "Error: Plugin not found" >&2
+    exit 1
+fi
+VCS_TOOL="$PLUGIN_ROOT/plugin/skills/vcs-tool-manager/vcs-tool.sh"
+```
+
+All commands below use `$VCS_TOOL` as the entry point.
+
 ## Available Scripts
 
-All scripts are located in the `scripts/` directory and can be invoked via Bash.
+All scripts can be invoked via the `vcs-tool.sh` wrapper script.
 
 ### 0. Detect Platform (REQUIRED FIRST STEP)
 
@@ -38,7 +53,7 @@ All scripts are located in the `scripts/` directory and can be invoked via Bash.
 **Usage**:
 
 ```bash
-PLATFORM=$(python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/detect_platform.py)
+PLATFORM=$("$VCS_TOOL" detect-platform)
 ```
 
 **Output**:
@@ -76,7 +91,7 @@ gitlab
 **Usage**:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/get_gitlab_mr_metadata.py <MR_NUMBER>
+"$VCS_TOOL" get-gitlab-mr <MR_NUMBER>
 ```
 
 **Output** (JSON):
@@ -115,7 +130,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/get_gitlab_
 **Usage**:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/get_github_pr_metadata.py <PR_NUMBER>
+"$VCS_TOOL" get-github-pr <PR_NUMBER>
 ```
 
 **Output** (JSON):
@@ -145,7 +160,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/get_github_
 **Usage**:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/format_blob_url.py '<JSON_METADATA>'
+"$VCS_TOOL" format-url '<JSON_METADATA>'
 ```
 
 **Input JSON** (GitLab):
@@ -197,7 +212,7 @@ https://gitlab.example.com/myorg/myrepo/-/blob/abc123def456/src/auth/login.ts#L4
 **Usage**:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/validate_url.py <URL>
+"$VCS_TOOL" validate-url <URL>
 ```
 
 **Output**:
@@ -220,14 +235,17 @@ HTTP Code: 200
 This is the recommended workflow that automatically detects whether you're working with GitHub or GitLab:
 
 ```bash
+PLUGIN_ROOT=$(jq -r '."personal-marketplace".installLocation // empty' ~/.claude/plugins/known_marketplaces.json)
+VCS_TOOL="$PLUGIN_ROOT/plugin/skills/vcs-tool-manager/vcs-tool.sh"
+
 ISSUE_NUMBER="123"
 
-PLATFORM=$(python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/detect_platform.py)
+PLATFORM=$("$VCS_TOOL" detect-platform)
 
 if [ "$PLATFORM" = "gitlab" ]; then
-    METADATA=$(python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/get_gitlab_mr_metadata.py "$ISSUE_NUMBER")
+    METADATA=$("$VCS_TOOL" get-gitlab-mr "$ISSUE_NUMBER")
 elif [ "$PLATFORM" = "github" ]; then
-    METADATA=$(python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/get_github_pr_metadata.py "$ISSUE_NUMBER")
+    METADATA=$("$VCS_TOOL" get-github-pr "$ISSUE_NUMBER")
 else
     echo "Error: Unsupported platform" >&2
     exit 1
@@ -238,9 +256,9 @@ LINE_NUMBER=42
 
 URL_INPUT=$(echo "$METADATA" | jq -c ". + {platform: \"$PLATFORM\", file_path: \"$FILE_PATH\", line_number: $LINE_NUMBER}")
 
-URL=$(python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/format_blob_url.py "$URL_INPUT")
+URL=$("$VCS_TOOL" format-url "$URL_INPUT")
 
-python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/validate_url.py "$URL"
+"$VCS_TOOL" validate-url "$URL"
 ```
 
 ### Manual GitLab Merge Request Review
@@ -248,18 +266,21 @@ python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/validate_ur
 If you already know you're working with GitLab:
 
 ```bash
+PLUGIN_ROOT=$(jq -r '."personal-marketplace".installLocation // empty' ~/.claude/plugins/known_marketplaces.json)
+VCS_TOOL="$PLUGIN_ROOT/plugin/skills/vcs-tool-manager/vcs-tool.sh"
+
 MR_NUMBER="123"
 
-METADATA=$(python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/get_gitlab_mr_metadata.py "$MR_NUMBER")
+METADATA=$("$VCS_TOOL" get-gitlab-mr "$MR_NUMBER")
 
 FILE_PATH="src/auth/login.ts"
 LINE_NUMBER=42
 
 URL_INPUT=$(echo "$METADATA" | jq -c ". + {platform: \"gitlab\", file_path: \"$FILE_PATH\", line_number: $LINE_NUMBER}")
 
-URL=$(python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/format_blob_url.py "$URL_INPUT")
+URL=$("$VCS_TOOL" format-url "$URL_INPUT")
 
-python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/validate_url.py "$URL"
+"$VCS_TOOL" validate-url "$URL"
 ```
 
 ### Manual GitHub Pull Request Review
@@ -267,18 +288,21 @@ python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/validate_ur
 If you already know you're working with GitHub:
 
 ```bash
+PLUGIN_ROOT=$(jq -r '."personal-marketplace".installLocation // empty' ~/.claude/plugins/known_marketplaces.json)
+VCS_TOOL="$PLUGIN_ROOT/plugin/skills/vcs-tool-manager/vcs-tool.sh"
+
 PR_NUMBER="456"
 
-METADATA=$(python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/get_github_pr_metadata.py "$PR_NUMBER")
+METADATA=$("$VCS_TOOL" get-github-pr "$PR_NUMBER")
 
 FILE_PATH="src/auth/login.ts"
 LINE_NUMBER=42
 
 URL_INPUT=$(echo "$METADATA" | jq -c ". + {platform: \"github\", file_path: \"$FILE_PATH\", line_number: $LINE_NUMBER}")
 
-URL=$(python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/format_blob_url.py "$URL_INPUT")
+URL=$("$VCS_TOOL" format-url "$URL_INPUT")
 
-python3 ${CLAUDE_PLUGIN_ROOT}/plugin/skills/vcs-tool-manager/scripts/validate_url.py "$URL"
+"$VCS_TOOL" validate-url "$URL"
 ```
 
 ## Common Pitfalls to Avoid
