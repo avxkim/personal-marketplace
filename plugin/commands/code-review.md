@@ -78,13 +78,17 @@ Both `code-reviewer` and `software-architect` agents output **structured JSON**.
 ```bash
 VCS_TOOL=$(for path in $(jq -r 'to_entries[] | .value.installLocation + "/plugin/skills/vcs-tool-manager/vcs-tool.sh"' ~/.claude/plugins/known_marketplaces.json); do [ -f "$path" ] && echo "$path" && break; done)
 
-# Format code review JSON
-CODE_REVIEW_JSON='<JSON from code-reviewer agent>'
-CODE_COMMENT=$("$VCS_TOOL" format-review "$CODE_REVIEW_JSON")
+# Format code review JSON (using heredoc to avoid escaping issues)
+CODE_COMMENT=$(cat <<'EOF_CODE' | "$VCS_TOOL" format-review -
+<JSON from code-reviewer agent>
+EOF_CODE
+)
 
-# Format architecture review JSON
-ARCH_REVIEW_JSON='<JSON from software-architect agent>'
-ARCH_COMMENT=$("$VCS_TOOL" format-review "$ARCH_REVIEW_JSON")
+# Format architecture review JSON (using heredoc)
+ARCH_COMMENT=$(cat <<'EOF_ARCH' | "$VCS_TOOL" format-review -
+<JSON from software-architect agent>
+EOF_ARCH
+)
 
 # Combine both comments
 FINAL_COMMENT="$CODE_COMMENT

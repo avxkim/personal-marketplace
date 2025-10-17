@@ -330,12 +330,22 @@ HTTP Code: 200
 **Usage**:
 
 ```bash
-"$VCS_TOOL" format-review <JSON_DATA>
+# Method 1: Using heredoc (RECOMMENDED - best for complex JSON)
+cat <<'EOF' | "$VCS_TOOL" format-review -
+{JSON_DATA}
+EOF
+
+# Method 2: Using echo with stdin
+echo '<JSON_DATA>' | "$VCS_TOOL" format-review -
+
+# Method 3: Pass as argument (only for simple/small JSON without special chars)
+"$VCS_TOOL" format-review '<JSON_DATA>'
 ```
 
 **Parameters**:
 
 - `JSON_DATA`: JSON string containing review data with `type` field ("code" or "architecture")
+- `-`: Read from stdin (recommended for complex JSON with special characters, quotes, backslashes)
 
 **Code Review Input JSON**:
 
@@ -471,7 +481,23 @@ HTTP Code: 200
 - ✅ **File links** - clickable links to exact code locations
 - ✅ **Supports both review types** - code and architecture
 
-**Why Use This?**
+**Why Use stdin (heredoc)?**
+
+Passing JSON as command-line argument causes issues with:
+
+- ❌ Special characters (quotes, backslashes)
+- ❌ Shell escaping problems
+- ❌ Size limitations
+- ❌ Complex nested structures
+
+Using stdin with heredoc:
+
+- ✅ No escaping issues
+- ✅ Handles special characters correctly
+- ✅ No size limits
+- ✅ Readable and maintainable
+
+**Why Use This Script?**
 
 Without this script, Claude interprets markdown templates differently each time, leading to:
 

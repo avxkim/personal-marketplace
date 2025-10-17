@@ -170,13 +170,18 @@ def format_architecture_review(data: Dict) -> str:
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: format_review_comment.py <JSON_DATA>", file=sys.stderr)
-        print("JSON should contain 'type' field: 'code' or 'architecture'", file=sys.stderr)
-        sys.exit(1)
+    # Read JSON from stdin if no arguments, otherwise from argument
+    if len(sys.argv) < 2 or sys.argv[1] == "-":
+        try:
+            json_input = sys.stdin.read()
+        except Exception as e:
+            print(f"Error reading from stdin: {e}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        json_input = sys.argv[1]
 
     try:
-        data = json.loads(sys.argv[1])
+        data = json.loads(json_input)
     except json.JSONDecodeError as e:
         print(f"Error parsing JSON: {e}", file=sys.stderr)
         sys.exit(1)
