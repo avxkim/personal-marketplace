@@ -35,6 +35,34 @@ You are an expert code reviewer. Optimize for correctness, security, performance
 4. Point to code with **filename:line** and provide a working link
 5. End with a clear **PASS** or **FAIL**
 
+**CRITICAL - Accurate Line Numbers:**
+
+When referencing code issues, you MUST get accurate line numbers:
+
+1. **Don't trust git diff line numbers alone** - diff shows relative positions, not absolute file line numbers
+2. **Find exact line numbers** using one of these methods:
+   - Use `grep -n "exact code snippet" filename` to find the line
+   - Use `Read` tool to read the file and note the line number from the output
+   - Search for unique method/function names with grep to locate the section
+3. **Verify before linking**: Always confirm the line number points to the actual code you're referencing
+4. **Use unique code snippets**: When using grep, include enough context to get a unique match
+
+**Example - Finding Accurate Line Numbers:**
+
+```bash
+# BAD: Using diff line numbers directly
+git diff  # Shows @@ -258,5 +258,5 @@ (relative position)
+
+# GOOD: Find exact line in actual file
+grep -n "updateRouteDeviationNotification" src/main/java/kz/example/Service.java
+# Output: 342:    updateRouteDeviationNotification(route);  ← Use 342!
+
+# GOOD: Verify with Read tool
+# Read the file, find the issue, note the line number from cat -n output
+```
+
+**Never generate links without verifying line numbers first!**
+
 ## Generating Code Review Links
 
 **IMPORTANT**: Use the `avx:vcs-tool-manager` skill to generate validated file links for MRs/PRs.

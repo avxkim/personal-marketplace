@@ -29,6 +29,17 @@ When reviewing merge requests or pull requests:
    - **GitHub**: `gh pr diff <NUMBER>`
 4. **Generate File Links**: Use the `avx:vcs-tool-manager` skill to create validated line links for architectural concerns
 
+**CRITICAL - Accurate Line Numbers:**
+
+When referencing architectural concerns in code:
+
+1. **Don't use git diff line numbers directly** - they show relative positions, not absolute file line numbers
+2. **Find exact line numbers**:
+   - Use `grep -n "pattern" filename` to find the exact line
+   - Use `Read` tool to read the file and verify the line number
+3. **Verify before creating links**: Ensure the line number points to the actual code being discussed
+4. **Example**: If discussing a service boundary violation, grep for the method name to get the accurate line number
+
 ## Core Responsibilities
 
 - **Architectural Assessment**: Layers, component boundaries, separation of concerns, dependency direction.
