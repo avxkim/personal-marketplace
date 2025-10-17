@@ -23,9 +23,9 @@ def format_code_review(data: Dict) -> str:
             filename = file_path.split("/")[-1] if "/" in file_path else file_path
 
             if line and url:
-                lines.append(f'{idx}. **{filename}** ([{file_path}:{line}]({url})):')
+                lines.append(f'{idx}. <big>**{filename}**</big> ([{file_path}:{line}]({url})):')
             else:
-                lines.append(f'{idx}. **{filename}** ({file_path}):')
+                lines.append(f'{idx}. <big>**{filename}**</big> ({file_path}):')
 
             lines.append(f'   {desc}\n')
 
@@ -45,9 +45,9 @@ def format_code_review(data: Dict) -> str:
             filename = file_path.split("/")[-1] if "/" in file_path else file_path
 
             if line and url:
-                lines.append(f'{idx}. **{filename}** ([{file_path}:{line}]({url})):')
+                lines.append(f'{idx}. <big>**{filename}**</big> ([{file_path}:{line}]({url})):')
             else:
-                lines.append(f'{idx}. **{filename}** ({file_path}):')
+                lines.append(f'{idx}. <big>**{filename}**</big> ({file_path}):')
 
             lines.append(f'   {desc}\n')
 
@@ -67,16 +67,16 @@ def format_code_review(data: Dict) -> str:
             filename = file_path.split("/")[-1] if "/" in file_path else file_path
 
             if line and url:
-                lines.append(f'{idx}. **{filename}** ([{file_path}:{line}]({url})):')
+                lines.append(f'{idx}. <big>**{filename}**</big> ([{file_path}:{line}]({url})):')
             else:
-                lines.append(f'{idx}. **{filename}** ({file_path}):')
+                lines.append(f'{idx}. <big>**{filename}**</big> ({file_path}):')
 
             lines.append(f'   {desc}\n')
 
         lines.append("---\n")
 
     # Verdict
-    lines.append("## ✅ Verdict\n")
+    lines.append("## ⚖️ Verdict\n")
     verdict = data.get("verdict", "").upper()
     if verdict == "PASS":
         lines.append("**PASS** ✔️ - Ready for merge\n")
@@ -107,8 +107,6 @@ def format_architecture_review(data: Dict) -> str:
         for idx, concern in enumerate(concerns, 1):
             severity = concern.get("severity", "Unknown")
             desc = concern.get("description", "")
-            impact = concern.get("impact", "")
-            components = concern.get("components", [])
             file_path = concern.get("file")
             line = concern.get("line")
             url = concern.get("url")
@@ -120,54 +118,16 @@ def format_architecture_review(data: Dict) -> str:
                 "minor": "🟡"
             }.get(severity.lower(), "⚠️")
 
-            lines.append(f"{idx}. {severity_emoji} **{severity}**: {desc}")
-
-            if impact:
-                lines.append(f"   - **Impact**: {impact}")
-
-            if components:
-                components_str = ", ".join(components)
-                lines.append(f"   - **Affected Components**: {components_str}")
-
+            # Format similar to code-reviewer: numbered list with file link
             if file_path:
-                # Extract just the filename from full path
                 filename = file_path.split("/")[-1] if "/" in file_path else file_path
-
                 if line and url:
-                    lines.append(f"   - **Location**: {filename} ([{file_path}:{line}]({url}))")
+                    lines.append(f"{idx}. {severity_emoji} <big>**{filename}**</big> ([{file_path}:{line}]({url})): {desc}\n")
                 else:
-                    lines.append(f"   - **Location**: {filename} ({file_path})")
-
-            lines.append("")
-
-        lines.append("---\n")
-
-    # Recommendations
-    recommendations = data.get("recommendations", [])
-    if recommendations:
-        lines.append("## 💡 Recommendations\n")
-        for idx, rec in enumerate(recommendations, 1):
-            priority = rec.get("priority", "Medium")
-            desc = rec.get("description", "")
-            tradeoffs = rec.get("tradeoffs")
-            effort = rec.get("effort")
-
-            # Priority emoji
-            priority_emoji = {
-                "high": "🔴",
-                "medium": "🟡",
-                "low": "🟢"
-            }.get(priority.lower(), "")
-
-            lines.append(f"{idx}. {priority_emoji} **{priority} Priority**: {desc}")
-
-            if tradeoffs:
-                lines.append(f"   - **Trade-offs**: {tradeoffs}")
-
-            if effort:
-                lines.append(f"   - **Effort**: {effort}")
-
-            lines.append("")
+                    lines.append(f"{idx}. {severity_emoji} <big>**{filename}**</big> ({file_path}): {desc}\n")
+            else:
+                # No file path - just show description with severity
+                lines.append(f"{idx}. {severity_emoji} **{severity.title()}**: {desc}\n")
 
         lines.append("---\n")
 

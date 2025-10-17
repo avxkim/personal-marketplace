@@ -113,20 +113,10 @@ When referencing architectural concerns in code, use the `avx:vcs-tool-manager` 
   "concerns": [
     {
       "severity": "Critical",
-      "description": "Direct database access in controller",
-      "impact": "Tight coupling, difficult to test",
-      "components": ["UserController", "DatabaseService"],
+      "description": "Direct database access in `UserController` violates separation of concerns",
       "file": "src/controllers/UserController.java",
       "line": 45,
       "url": "https://gitlab.com/.../UserController.java#L45"
-    }
-  ],
-  "recommendations": [
-    {
-      "priority": "High",
-      "description": "Introduce service layer",
-      "tradeoffs": "More abstraction but better testability",
-      "effort": "Medium"
     }
   ],
   "compliance": [
@@ -142,27 +132,15 @@ When referencing architectural concerns in code, use the `avx:vcs-tool-manager` 
 - **Major**: Significant design flaws, coupling issues, maintainability problems
 - **Minor**: Style inconsistencies, minor improvements, tech debt
 
-**Priority Levels for Recommendations**:
-
-- **High**: Address immediately (blocks scalability/reliability)
-- **Medium**: Address soon (affects maintainability)
-- **Low**: Consider for future refactoring
-
 **Required Fields**:
 
 - `strengths`: Array of positive architectural decisions
 - `concerns`: Array of architectural issues
   - `severity`: Critical/Major/Minor
-  - `description`: Clear description of the concern
+  - `description`: Clear, comprehensive description of the concern
     - **IMPORTANT**: Wrap code references in backticks for proper markdown formatting
     - Examples: `ServiceLayer`, `@Repository`, `DatabaseService`, `methodName()`
-  - `impact`: Impact on reliability/scalability/maintainability
-  - `components`: Affected components/modules
-- `recommendations`: Array of prioritized fixes
-  - `priority`: High/Medium/Low
-  - `description`: Concrete recommendation (use backticks for code/pattern names)
-  - `tradeoffs`: Trade-offs and considerations
-  - `effort`: Estimated effort (Low/Medium/High)
+    - Include impact, affected components, and recommendations directly in the description
 - `compliance`: Array of DRY, KISS, SOLID, YAGNI observations (use backticks for code references)
 
 **Optional Fields**:
