@@ -73,30 +73,57 @@ Pass the following to code-reviewer agent in your delegation prompt:
 
 **4. Format Review Comments**
 
-Both `code-reviewer` and `software-architect` agents output **structured JSON**. Use the `format-review` script to generate consistent markdown comments:
+Both `code-reviewer` and `software-architect` agents output **structured JSON**. Use the `format-review` script to generate consistent markdown comments.
+
+**CRITICAL - MUST Use Heredoc Pattern:**
+
+⚠️ **DO NOT** pass JSON as command-line argument - it will fail with escape errors!
+✅ **ALWAYS** use heredoc with stdin (the `-` argument tells script to read from stdin)
 
 ```bash
+# Step 1: Locate the VCS tool
 VCS_TOOL=$(for path in $(jq -r 'to_entries[] | .value.installLocation + "/plugin/skills/vcs-tool-manager/vcs-tool.sh"' ~/.claude/plugins/known_marketplaces.json); do [ -f "$path" ] && echo "$path" && break; done)
 
-# Format code review JSON (using heredoc to avoid escaping issues)
+# Step 2: Format code review JSON
+# IMPORTANT: Use heredoc (cat <<'EOF' | command -) to pass JSON via stdin
 CODE_COMMENT=$(cat <<'EOF_CODE' | "$VCS_TOOL" format-review -
-<JSON from code-reviewer agent>
+{
+  "type": "code",
+  "verdict": "PASS",
+  "critical": [],
+  "warnings": [],
+  "suggestions": []
+}
 EOF_CODE
 )
 
-# Format architecture review JSON (using heredoc)
+# Step 3: Format architecture review JSON
+# IMPORTANT: Use heredoc (cat <<'EOF' | command -) to pass JSON via stdin
 ARCH_COMMENT=$(cat <<'EOF_ARCH' | "$VCS_TOOL" format-review -
-<JSON from software-architect agent>
+{
+  "type": "architecture",
+  "strengths": [],
+  "concerns": [],
+  "compliance": []
+}
 EOF_ARCH
 )
 
-# Combine both comments
+# Step 4: Combine both formatted comments
 FINAL_COMMENT="$CODE_COMMENT
 
 ---
 
 $ARCH_COMMENT"
 ```
+
+**Pattern Explanation:**
+
+- `cat <<'EOF_CODE'` - Start heredoc (the quotes prevent variable expansion)
+- Paste the entire JSON object here (can be multiple lines)
+- `EOF_CODE` - End heredoc marker
+- `| "$VCS_TOOL" format-review -` - Pipe to script, `-` means read from stdin
+- `$(...)` - Capture output in variable
 
 **Why Use format-review Script?**
 
