@@ -137,23 +137,23 @@ $ARCH_COMMENT"
 After formatting, **ask user** if they want to publish the comment to MR/PR:
 
 ```bash
-# GitLab - Method 1: Direct variable (preferred for short comments)
-glab mr note <MR_NUMBER> --repo <owner>/<repo> -m "$FINAL_COMMENT"
+# Using vcs-tool post-comment command (recommended)
+echo "$FINAL_COMMENT" | "$VCS_TOOL" post-comment "$PLATFORM" "$ISSUE_NUMBER" -
+```
 
-# GitLab - Method 2: Using heredoc (preferred for long/multiline comments)
-glab mr note <MR_NUMBER> --repo <owner>/<repo> -m "$(cat <<'EOF'
-$FINAL_COMMENT
-EOF
-)"
+**Alternative - Direct CLI usage**:
+
+```bash
+# GitLab
+glab mr note <MR_NUMBER> -m "$FINAL_COMMENT"
 
 # GitHub
-gh pr comment <PR_NUMBER> --repo <owner>/<repo> --body "$FINAL_COMMENT"
+gh pr comment <PR_NUMBER> --body "$FINAL_COMMENT"
 ```
 
 **Important Notes**:
 
-- Use `-m` flag for `glab mr note` (NOT `-F` - that flag doesn't exist)
-- For multiline comments, use heredoc or ensure proper quoting
-- Include `--repo` flag if not in the repository directory
-- Don't add "reviewed by" or review dates in the footer
+- **Recommended**: Use `post-comment` command for unified interface
+- For long comments, always use stdin with `-` to avoid escaping issues
 - DON'T publish automatically - always ask first!
+- The `post-comment` command handles platform detection automatically

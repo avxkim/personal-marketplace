@@ -638,3 +638,116 @@ Using stdin with heredoc:
 Error parsing JSON: <details>
 Error: Invalid type '<type>'. Use 'code' or 'architecture'
 ```
+
+---
+
+## Command: post-comment
+
+**Purpose**: Posts a comment to a GitLab merge request or GitHub pull request using the appropriate CLI tool.
+
+**Usage**:
+
+```bash
+# Method 1: Pass comment directly
+"$VCS_TOOL" post-comment <platform> <issue_number> "Comment text"
+
+# Method 2: Use stdin (recommended for long/multiline comments)
+cat <<'EOF' | "$VCS_TOOL" post-comment <platform> <issue_number> -
+Comment text here
+EOF
+
+# Method 3: Pipe from variable
+echo "$COMMENT" | "$VCS_TOOL" post-comment <platform> <issue_number> -
+```
+
+**Parameters**:
+
+- `platform`: "gitlab" or "github" (required)
+- `issue_number`: MR/PR number as string (required)
+- `comment`: Comment text (required)
+  - Pass directly as argument for short comments
+  - Use `-` to read from stdin for long/multiline comments
+
+**Examples**:
+
+```bash
+# GitLab MR - simple comment
+"$VCS_TOOL" post-comment gitlab 123 "LGTM! Ready to merge."
+
+# GitHub PR - long formatted comment
+cat <<'EOF' | "$VCS_TOOL" post-comment github 456 -
+# Code Review Summary 🔍
+
+## 🔴 Critical Issues (Must Fix)
+
+1. **Service.java** ([src/Service.java:342](...)): Null pointer risk
+
+## ⚖️ Verdict
+
+**FAIL** ❌ - Requires fixes before merge
+EOF
+
+# Using variable with formatted review
+FINAL_COMMENT="$CODE_REVIEW
+
+---
+
+$ARCH_REVIEW"
+
+echo "$FINAL_COMMENT" | "$VCS_TOOL" post-comment gitlab 175 -
+```
+
+**How It Works**:
+
+1. Validates platform is "gitlab" or "github"
+2. Validates issue number is provided
+3. Reads comment text (from argument or stdin)
+4. Calls appropriate CLI tool:
+   - GitLab: `glab mr note <MR_NUMBER> -m <comment>`
+   - GitHub: `gh pr comment <PR_NUMBER> --body <comment>`
+5. Returns success/error message
+
+**Output**:
+
+Success:
+
+```
+✅ Comment posted successfully to GitLab #123
+```
+
+Error:
+
+```
+Error posting to GitLab MR: <error details>
+Error: glab CLI not found. Install with: brew install glab
+```
+
+**Exit Codes**:
+
+- 0: Comment posted successfully
+- 1: Error (invalid parameters, CLI tool error, or network error)
+
+**Error Messages**:
+
+```
+Error: Invalid platform 'foo'. Use 'gitlab' or 'github'
+Error: Comment cannot be empty
+Error: glab CLI not found. Install with: brew install glab
+Error: gh CLI not found. Install with: brew install gh
+Error posting to GitLab MR: <glab error>
+Error posting to GitHub PR: <gh error>
+```
+
+**Prerequisites**:
+
+- GitLab: `glab` CLI installed and authenticated (`glab auth login`)
+- GitHub: `gh` CLI installed and authenticated (`gh auth login`)
+
+**Why Use This Instead of glab/gh Directly?**
+
+- ✅ Unified interface for both platforms
+- ✅ Consistent error handling
+- ✅ Proper stdin support for long comments
+- ✅ Clear success/failure messages
+- ✅ Exit codes for error handling
+- ✅ Centralized with other VCS operations

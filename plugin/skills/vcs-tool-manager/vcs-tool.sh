@@ -30,9 +30,12 @@ case "$command" in
     format-review)
         python3 "$SCRIPTS_DIR/format_review_comment.py" "$@"
         ;;
+    post-comment)
+        python3 "$SCRIPTS_DIR/post_comment.py" "$@"
+        ;;
     *)
         echo "Unknown command: $command" >&2
-        echo "Available commands: detect-platform, get-gitlab-mr, get-github-pr, format-url, validate-url, find-line, format-review" >&2
+        echo "Available commands: detect-platform, get-gitlab-mr, get-github-pr, format-url, validate-url, find-line, format-review, post-comment" >&2
         exit 1
         ;;
 esac

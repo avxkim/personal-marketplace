@@ -108,7 +108,7 @@ Generates: `https://gitlab.com/org/repo/-/blob/SHA/path/file.ts#L42`
 "$VCS_TOOL" validate-url <URL>  # Tests via curl, returns HTTP status
 ```
 
-### 6. Format Review Comment (For Consistent Output)
+### 6. Format Review Comment
 
 **CRITICAL**: Use heredoc pattern to avoid JSON escaping errors!
 
@@ -138,6 +138,40 @@ EOF_ARCH
 ```
 
 **Why heredoc?** Passing JSON as command-line argument fails with escape errors. The `-` argument tells the script to read from stdin.
+
+### 7. Post Comment to MR/PR
+
+```bash
+# Method 1: Pass comment directly (for short comments)
+"$VCS_TOOL" post-comment <platform> <issue_number> "Comment text"
+
+# Method 2: Use stdin with heredoc (recommended for long comments)
+cat <<'EOF' | "$VCS_TOOL" post-comment <platform> <issue_number> -
+Your long comment text here...
+Can span multiple lines...
+EOF
+```
+
+**Parameters**:
+
+- `platform`: "gitlab" or "github"
+- `issue_number`: MR/PR number (e.g., "123")
+- `comment`: Comment text (use `-` to read from stdin)
+
+**Examples**:
+
+```bash
+# GitLab MR
+"$VCS_TOOL" post-comment gitlab 123 "LGTM! Ready to merge."
+
+# GitHub PR with long comment
+cat <<'EOF' | "$VCS_TOOL" post-comment github 456 -
+# Code Review Summary
+
+## Critical Issues
+...
+EOF
+```
 
 ## Complete Workflow Example
 
