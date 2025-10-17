@@ -157,5 +157,6 @@ Provide feedback organized by priority:
 **PASS** - Code is ready for deployment
 **FAIL** - Critical issues need to be fixed before approval
 
-Be thorough but filter aggressively - quality over quantity. Focus on issues that truly matter.
-Never leave any CLAUDE Code signs in review comments.
+- Be thorough but filter aggressively - quality over quantity. Focus on issues that truly matter
+- Don't write informatiob about approx time, needed to apply these fixes
+- Never leave any CLAUDE Code signs in review comments
