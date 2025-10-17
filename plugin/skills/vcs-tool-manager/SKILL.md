@@ -27,15 +27,18 @@ Invoke this skill when you need to:
 
 ## Finding the Plugin Location
 
-**IMPORTANT**: Before using this skill's scripts, determine the plugin installation location:
+**IMPORTANT**: Before using this skill's scripts, locate the vcs-tool wrapper.
+
+**Method 1: Auto-discover (works with any marketplace name)**
 
 ```bash
-PLUGIN_ROOT=$(jq -r '."personal-marketplace".installLocation // empty' ~/.claude/plugins/known_marketplaces.json)
-if [ -z "$PLUGIN_ROOT" ]; then
-    echo "Error: Plugin not found" >&2
-    exit 1
-fi
-VCS_TOOL="$PLUGIN_ROOT/plugin/skills/vcs-tool-manager/vcs-tool.sh"
+VCS_TOOL=$(for path in $(jq -r 'to_entries[] | .value.installLocation + "/plugin/skills/vcs-tool-manager/vcs-tool.sh"' ~/.claude/plugins/known_marketplaces.json); do [ -f "$path" ] && echo "$path" && break; done)
+```
+
+**Method 2: Direct lookup (faster, requires knowing marketplace name)**
+
+```bash
+VCS_TOOL=$(jq -r '."personal-marketplace".installLocation' ~/.claude/plugins/known_marketplaces.json)/plugin/skills/vcs-tool-manager/vcs-tool.sh
 ```
 
 All commands below use `$VCS_TOOL` as the entry point.
@@ -235,8 +238,7 @@ HTTP Code: 200
 This is the recommended workflow that automatically detects whether you're working with GitHub or GitLab:
 
 ```bash
-PLUGIN_ROOT=$(jq -r '."personal-marketplace".installLocation // empty' ~/.claude/plugins/known_marketplaces.json)
-VCS_TOOL="$PLUGIN_ROOT/plugin/skills/vcs-tool-manager/vcs-tool.sh"
+VCS_TOOL=$(for path in $(jq -r 'to_entries[] | .value.installLocation + "/plugin/skills/vcs-tool-manager/vcs-tool.sh"' ~/.claude/plugins/known_marketplaces.json); do [ -f "$path" ] && echo "$path" && break; done)
 
 ISSUE_NUMBER="123"
 
@@ -266,8 +268,7 @@ URL=$("$VCS_TOOL" format-url "$URL_INPUT")
 If you already know you're working with GitLab:
 
 ```bash
-PLUGIN_ROOT=$(jq -r '."personal-marketplace".installLocation // empty' ~/.claude/plugins/known_marketplaces.json)
-VCS_TOOL="$PLUGIN_ROOT/plugin/skills/vcs-tool-manager/vcs-tool.sh"
+VCS_TOOL=$(jq -r '."personal-marketplace".installLocation' ~/.claude/plugins/known_marketplaces.json)/plugin/skills/vcs-tool-manager/vcs-tool.sh
 
 MR_NUMBER="123"
 
@@ -288,8 +289,7 @@ URL=$("$VCS_TOOL" format-url "$URL_INPUT")
 If you already know you're working with GitHub:
 
 ```bash
-PLUGIN_ROOT=$(jq -r '."personal-marketplace".installLocation // empty' ~/.claude/plugins/known_marketplaces.json)
-VCS_TOOL="$PLUGIN_ROOT/plugin/skills/vcs-tool-manager/vcs-tool.sh"
+VCS_TOOL=$(jq -r '."personal-marketplace".installLocation' ~/.claude/plugins/known_marketplaces.json)/plugin/skills/vcs-tool-manager/vcs-tool.sh
 
 PR_NUMBER="456"
 
