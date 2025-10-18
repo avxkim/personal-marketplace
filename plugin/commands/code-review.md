@@ -139,6 +139,19 @@ After formatting, **ask user** if they want to publish the comment to MR/PR.
 **IMPORTANT**: Always use the `post-comment` command (never use `glab` or `gh` directly):
 
 ```bash
+# Step 1: Locate the VCS tool (if not already set)
+VCS_TOOL=$(for path in $(jq -r 'to_entries[] | .value.installLocation + "/plugin/skills/vcs-tool-manager/vcs-tool.sh"' ~/.claude/plugins/known_marketplaces.json); do [ -f "$path" ] && echo "$path" && break; done)
+
+# Step 2: Detect platform (if not already set)
+PLATFORM=$("$VCS_TOOL" detect-platform)
+
+# Step 3: Extract issue number from MR/PR URL or use the number directly
+# For GitLab: extract from URL like https://gitlab.com/owner/repo/-/merge_requests/123
+# For GitHub: extract from URL like https://github.com/owner/repo/pull/123
+# Or if $ARGUMENTS is just a number, use it directly
+ISSUE_NUMBER=$(echo "$ARGUMENTS" | sed -E 's/.*[\/:]([0-9]+)([?#].*)?$/\1/' | grep -E '^[0-9]+$' || echo "$ARGUMENTS" | grep -oE '^[0-9]+$')
+
+# Step 4: Post the comment
 echo "$FINAL_COMMENT" | "$VCS_TOOL" post-comment "$PLATFORM" "$ISSUE_NUMBER" -
 ```
 
