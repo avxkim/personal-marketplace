@@ -149,7 +149,7 @@ PLATFORM=$("$VCS_TOOL" detect-platform)
 # For GitLab: extract from URL like https://gitlab.com/owner/repo/-/merge_requests/123
 # For GitHub: extract from URL like https://github.com/owner/repo/pull/123
 # Or if $ARGUMENTS is just a number, use it directly
-ISSUE_NUMBER=$(echo "$ARGUMENTS" | sed -E 's/.*[\/:]([0-9]+)([?#].*)?$/\1/' | grep -E '^[0-9]+$' || echo "$ARGUMENTS" | grep -oE '^[0-9]+$')
+ISSUE_NUMBER=$(echo "$ARGUMENTS" | grep -oE '[0-9]+' | tail -1)
 
 # Step 4: Post the comment
 echo "$FINAL_COMMENT" | "$VCS_TOOL" post-comment "$PLATFORM" "$ISSUE_NUMBER" -
