@@ -653,6 +653,84 @@ USER_ID=$("$REDMINE_TOOL" get-current-user | jq -r '.user.id')
 
 ---
 
+## Command: list-users
+
+**Purpose**: Retrieve a list of users with optional status filtering.
+
+**Usage**:
+
+```bash
+"$REDMINE_TOOL" list-users [OPTIONS]
+```
+
+**Options**:
+
+- `--status <STATUS>`: Filter by status (1/active, 2/registered, 3/locked)
+- `--name <NAME>`: Filter by name (substring match)
+- `--limit <N>`: Maximum number of users to return (default: 100)
+- `--offset <N>`: Pagination offset (default: 0)
+
+**Status Values**:
+
+- `1` or `active`: Active users
+- `2` or `registered`: Registered but not activated users
+- `3` or `locked`: Locked/inactive users
+
+**Output** (JSON):
+
+```json
+{
+  "users": [
+    {
+      "id": 1,
+      "login": "admin",
+      "admin": true,
+      "firstname": "Alexander",
+      "lastname": "Kim",
+      "mail": "avxkim@gmail.com",
+      "created_on": "2024-01-01T00:00:00Z",
+      "last_login_on": "2025-10-19T08:00:00Z",
+      "status": 1
+    }
+  ],
+  "total_count": 13,
+  "offset": 0,
+  "limit": 100
+}
+```
+
+**Examples**:
+
+```bash
+# List all users
+"$REDMINE_TOOL" list-users
+
+# List only active users
+"$REDMINE_TOOL" list-users --status active
+
+# List locked/inactive users
+"$REDMINE_TOOL" list-users --status locked
+
+# Search users by name
+"$REDMINE_TOOL" list-users --name "Kim"
+
+# Get user count by status
+"$REDMINE_TOOL" list-users --status active | jq '.total_count'
+
+# Extract user IDs and logins
+"$REDMINE_TOOL" list-users | jq -r '.users[] | "\(.id): \(.login) (\(.firstname) \(.lastname))"'
+
+# Find inactive users
+"$REDMINE_TOOL" list-users --status 3 | jq -r '.users[] | "\(.id)\t\(.login)\t\(.mail)"'
+```
+
+**Exit Codes**:
+
+- 0: Success
+- 1: Error (API error or authentication failure)
+
+---
+
 ## Error Handling
 
 All commands follow consistent error handling:

@@ -176,6 +176,24 @@ Returns JSON array of all accessible projects.
 
 Returns JSON with current authenticated user details.
 
+### 10. List Users
+
+```bash
+# List all users
+"$REDMINE_TOOL" list-users
+
+# List only active users
+"$REDMINE_TOOL" list-users --status active
+
+# List locked/inactive users
+"$REDMINE_TOOL" list-users --status locked
+
+# Search users by name
+"$REDMINE_TOOL" list-users --name "Kim"
+```
+
+Returns JSON array of users with optional status filtering (active/registered/locked).
+
 ## Complete Workflow Examples
 
 ### Create Issue and Log Time
