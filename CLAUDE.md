@@ -86,7 +86,9 @@ All agents are defined in `personal-plugin/agents/` as Markdown files with YAML 
 Commands are defined in `personal-plugin/commands/` as Markdown files.
 
 ### `/pr` Command (`pr.md`)
+
 Creates pull requests (GitHub) or merge requests (GitLab) with standardized format:
+
 - Detects platform automatically (gh vs glab)
 - Extracts task ID from branch name
 - Title format: `TASK-123: Description` or `feat/fix/chore: description`
@@ -94,7 +96,9 @@ Creates pull requests (GitHub) or merge requests (GitLab) with standardized form
 - ALWAYS runs `--help` first to check current CLI syntax
 
 ### `/code-review` Command (`code-review.md`)
+
 Delegates to code-reviewer and software-architect agents:
+
 - Runs both agents in parallel by default
 - Analyzes existing MR/PR comments if URL provided
 - Constructs proper file links with line numbers
@@ -107,30 +111,31 @@ The plugin includes automatic formatting hooks configured in `personal-plugin/ho
 
 ### Supported Languages and Tools
 
-| Language | Formatters | Extensions |
-|----------|-----------|-------|
-| JavaScript/TypeScript/Vue | Prettier → ESLint | .js, .jsx, .ts, .tsx, .vue, .mjs, .cjs |
-| Python | Black → isort | .py |
-| Rust | rustfmt | .rs |
-| Go | gofmt → goimports | .go |
-| Ruby | RuboCop | .rb |
-| PHP | PHP-CS-Fixer | .php |
-| Java | google-java-format | .java |
-| CSS/SCSS/LESS | Prettier | .css, .scss, .sass, .less |
-| HTML | Prettier | .html, .htm |
-| JSON | Prettier | .json |
-| YAML | Prettier | .yml, .yaml |
-| Markdown | Prettier | .md, .markdown |
-| Dart | dart format | .dart |
-| Swift | swift-format | .swift |
-| Kotlin | ktlint | .kt |
-| SQL | sqlfluff (fallback: pg_format) | .sql |
+| Language                  | Formatters                     | Extensions                             |
+| ------------------------- | ------------------------------ | -------------------------------------- |
+| JavaScript/TypeScript/Vue | Prettier → ESLint              | .js, .jsx, .ts, .tsx, .vue, .mjs, .cjs |
+| Python                    | Black → isort                  | .py                                    |
+| Rust                      | rustfmt                        | .rs                                    |
+| Go                        | gofmt → goimports              | .go                                    |
+| Ruby                      | RuboCop                        | .rb                                    |
+| PHP                       | PHP-CS-Fixer                   | .php                                   |
+| Java                      | google-java-format             | .java                                  |
+| CSS/SCSS/LESS             | Prettier                       | .css, .scss, .sass, .less              |
+| HTML                      | Prettier                       | .html, .htm                            |
+| JSON                      | Prettier                       | .json                                  |
+| YAML                      | Prettier                       | .yml, .yaml                            |
+| Markdown                  | Prettier                       | .md, .markdown                         |
+| Dart                      | dart format                    | .dart                                  |
+| Swift                     | swift-format                   | .swift                                 |
+| Kotlin                    | ktlint                         | .kt                                    |
+| SQL                       | sqlfluff (fallback: pg_format) | .sql                                   |
 
 ### Hook Configuration
 
 The plugin includes two hooks in `hooks.json`:
 
 **1. PostToolUse Hook - Auto-formatting:**
+
 ```json
 {
   "matcher": "Edit|Write|MultiEdit",
@@ -146,6 +151,7 @@ The plugin includes two hooks in `hooks.json`:
 Runs after every edit to format code silently.
 
 **2. Stop Hook - Code Review Trigger:**
+
 ```json
 {
   "hooks": [
@@ -215,6 +221,7 @@ go install golang.org/x/tools/cmd/goimports@latest
 ### Git Platform Integration
 
 This repository heavily integrates with GitLab and GitHub:
+
 - Use `glab` CLI for GitLab operations
 - Use `gh` CLI for GitHub operations
 - Always run `--help` before using CLI commands (they update frequently)
