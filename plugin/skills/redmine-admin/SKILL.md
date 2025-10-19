@@ -1,6 +1,6 @@
 ---
 name: Redmine Admin
-description: Manage Redmine tasks, time entries, and projects via REST API. Use when working with Redmine issues, creating/updating tasks, gathering time logs, or any Redmine-related operations.
+description: Manage Redmine via REST API. ALWAYS use when user mentions Redmine URLs, issues, tasks, wiki pages, time entries, or projects. Handles reading wiki pages, managing issues, logging time, and generating reports.
 allowed-tools: Bash, Read, Grep, WebFetch, BashOutput, KillShell
 ---
 
@@ -10,16 +10,25 @@ This skill provides utilities for managing Redmine project management system via
 
 ## Core Capabilities
 
-1. **Issue Management**: List, create, update, and read issues
-2. **Time Entry Management**: Log time, retrieve time entries by user/date
-3. **Project Management**: List projects and their details
-4. **User Management**: Retrieve user information
-5. **Reporting**: Generate time reports for developers
+1. **Wiki Pages**: Read wiki page content from URLs or project/page names
+2. **Issue Management**: List, create, update, and read issues
+3. **Time Entry Management**: Log time, retrieve time entries by user/date
+4. **Project Management**: List projects and their details
+5. **User Management**: Retrieve user information
+6. **Reporting**: Generate time reports for developers
 
 ## When to Use This Skill
 
-Invoke this skill when you need to:
+**IMPORTANT**: Invoke this skill whenever the user mentions:
 
+- **Any Redmine URL** (including wiki pages, issues, projects)
+- Redmine issues, tasks, or tickets
+- Time logging or time entries in Redmine
+- Redmine reports or project information
+
+Specific use cases:
+
+- Read Redmine wiki pages (extracts content from wiki URLs)
 - List or search Redmine issues/tasks
 - Create new issues with specific fields
 - Update issue status, assignee, or other fields
@@ -193,6 +202,21 @@ Returns JSON with current authenticated user details.
 ```
 
 Returns JSON array of users with optional status filtering (active/registered/locked).
+
+### 11. Get Wiki Page
+
+```bash
+# Get wiki page by URL
+"$REDMINE_TOOL" get-wiki --url "https://redmine.int-tro.kz/projects/alta/wiki/Release-003"
+
+# Get wiki page by project and page name
+"$REDMINE_TOOL" get-wiki --project-id alta --page Release-003
+
+# Get wiki page in JSON format
+"$REDMINE_TOOL" get-wiki --url "https://redmine.int-tro.kz/projects/alta/wiki/Release-003" --format json
+```
+
+Returns wiki page content with metadata (text format by default, JSON optional).
 
 ## Complete Workflow Examples
 

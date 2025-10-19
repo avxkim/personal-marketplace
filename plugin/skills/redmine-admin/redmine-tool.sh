@@ -39,6 +39,9 @@ case "$command" in
     list-users)
         python3 "$SCRIPTS_DIR/list_users.py" "$@"
         ;;
+    get-wiki)
+        python3 "$SCRIPTS_DIR/get_wiki.py" "$@"
+        ;;
     --help|-h|help)
         echo "Available commands:"
         echo "  list-issues       - List issues with optional filters"
@@ -51,12 +54,13 @@ case "$command" in
         echo "  list-projects     - List all projects"
         echo "  get-current-user  - Get current authenticated user"
         echo "  list-users        - List users with optional status filter"
+        echo "  get-wiki          - Get wiki page content by URL or project/page"
         echo "  --help, -h, help  - Show this help message"
         exit 0
         ;;
     *)
         echo "Unknown command: $command" >&2
-        echo "Available commands: list-issues, get-issue, create-issue, update-issue, log-time, get-time-entries, time-report, list-projects, get-current-user, list-users" >&2
+        echo "Available commands: list-issues, get-issue, create-issue, update-issue, log-time, get-time-entries, time-report, list-projects, get-current-user, list-users, get-wiki" >&2
         echo "Use --help for more information" >&2
         exit 1
         ;;

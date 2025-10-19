@@ -731,6 +731,106 @@ USER_ID=$("$REDMINE_TOOL" get-current-user | jq -r '.user.id')
 
 ---
 
+## Command: get-wiki
+
+**Purpose**: Retrieve wiki page content from Redmine.
+
+**Usage**:
+
+```bash
+# Using URL
+"$REDMINE_TOOL" get-wiki --url "https://redmine.example.com/projects/PROJECT/wiki/PAGE"
+
+# Using project ID and page name
+"$REDMINE_TOOL" get-wiki --project-id PROJECT --page PAGE_NAME
+```
+
+**Options**:
+
+- `--url <URL>`: Full Redmine wiki page URL
+- `--project-id <ID>`: Project identifier
+- `--page <NAME>`: Wiki page name
+- `--format <FORMAT>`: Output format ('text' or 'json', default: text)
+
+**Note**: Either `--url` OR both `--project-id` and `--page` must be provided.
+
+**Output** (Text format - default):
+
+```
+Title: Release 003
+Project: alta
+Page: Release-003
+Version: 12
+Author: Alexander Kim
+Updated: 2025-10-15T10:30:00Z
+--------------------------------------------------------------------------------
+[Wiki page content in Textile/Markdown format...]
+```
+
+**Output** (JSON format):
+
+```json
+{
+  "wiki_page": {
+    "title": "Release 003",
+    "text": "[Wiki page content...]",
+    "version": 12,
+    "author": {
+      "id": 1,
+      "name": "Alexander Kim"
+    },
+    "comments": "Updated release notes",
+    "created_on": "2025-10-01T09:00:00Z",
+    "updated_on": "2025-10-15T10:30:00Z"
+  }
+}
+```
+
+**Examples**:
+
+```bash
+# Read wiki page from URL (most common use case)
+"$REDMINE_TOOL" get-wiki --url "https://redmine.int-tro.kz/projects/alta/wiki/Release-003"
+
+# Read wiki page by project and page name
+"$REDMINE_TOOL" get-wiki --project-id alta --page Release-003
+
+# Get raw JSON for processing
+"$REDMINE_TOOL" get-wiki --url "https://redmine.int-tro.kz/projects/alta/wiki/Tasks" --format json
+
+# Extract just the content
+"$REDMINE_TOOL" get-wiki --url "https://redmine.int-tro.kz/projects/alta/wiki/Tasks" --format json | jq -r '.wiki_page.text'
+
+# Save wiki page to file
+"$REDMINE_TOOL" get-wiki --url "https://redmine.int-tro.kz/projects/alta/wiki/Documentation" > wiki_content.txt
+```
+
+**Exit Codes**:
+
+- 0: Success
+- 1: Error (invalid URL, page not found, or API error)
+
+**Common Use Cases**:
+
+1. **Extract release tasks from wiki**:
+
+   ```bash
+   "$REDMINE_TOOL" get-wiki --url "https://redmine.int-tro.kz/projects/alta/wiki/Release-003"
+   ```
+
+2. **Convert wiki to another format**:
+
+   ```bash
+   "$REDMINE_TOOL" get-wiki --url "..." --format json | jq -r '.wiki_page.text' | pandoc -f textile -t markdown
+   ```
+
+3. **Check wiki page version**:
+   ```bash
+   "$REDMINE_TOOL" get-wiki --url "..." --format json | jq -r '.wiki_page.version'
+   ```
+
+---
+
 ## Error Handling
 
 All commands follow consistent error handling:
