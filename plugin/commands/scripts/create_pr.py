@@ -121,7 +121,6 @@ def create_pr_mr(platform, source, target, title, description, assignee=None, cw
             cmd += f' --description "$(cat <<\'EOF\'\n{description}\nEOF\n)"'
         if assignee:
             cmd += f' --assignee {assignee}'
-        cmd += ' --remove-source-branch'
 
     print(f"\n{'='*60}")
     print(f"Creating {'PR' if platform == 'github' else 'MR'} in: {cwd or 'current directory'}")
