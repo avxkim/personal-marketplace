@@ -114,5 +114,18 @@ LINE=$(echo "$LINE_INFO" | jq -r '.line')
 - [ ] Output starts with `{` and ends with `}`?
 - [ ] ZERO markdown headers/emojis/tables?
 - [ ] ZERO text outside JSON?
+- [ ] ALL issues have "description" field (NOT "message")?
+- [ ] ALL descriptions are non-empty strings?
 
 If NO to question 1, use Markdown Mode instead. If NO to others, fix the JSON.
+
+**Example Valid Issue Object:**
+
+```json
+{
+  "file": "src/auth/login.ts",
+  "line": 45,
+  "url": "https://gitlab.com/repo/blob/abc123/src/auth/login.ts#L45",
+  "description": "Missing null check for `user.email` before calling `toLowerCase()`"
+}
+```

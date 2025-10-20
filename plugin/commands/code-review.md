@@ -45,11 +45,22 @@ gh pr view <PR_NUMBER> --json number,title,body,headRefName,headRefOid,url,comme
 
 **3. Delegate to Agents with JSON Output**
 
-When delegating to `code-reviewer` and `software-architect` agents, include "OUTPUT_FORMAT=JSON" in your prompt to trigger JSON-only output mode.
+⚠️ **CRITICAL**: You MUST include the exact string "OUTPUT_FORMAT=JSON" in your delegation prompt to both agents.
 
-Pass the following context:
+**Example delegation prompt:**
 
-- **OUTPUT_FORMAT=JSON** (required for formatting script to work)
+```
+OUTPUT_FORMAT=JSON
+
+Review the code changes in MR/PR #123...
+[rest of your prompt]
+```
+
+Without "OUTPUT_FORMAT=JSON", agents will output markdown instead of JSON, and the format-review script will fail.
+
+Pass the following context to agents:
+
+- **OUTPUT_FORMAT=JSON** (MANDATORY - must be first line of prompt)
 - MR/PR metadata (number, title, source branch, commit SHA)
 - List of existing comments (if any) with their content and line references
 - Request agent to verify if existing comments have been addressed in current code
@@ -75,7 +86,27 @@ Pass the following context:
 
 ## After Agent Reviews Complete:
 
-**4. Format Review Comments**
+**4. Validate Agent JSON Output**
+
+Before formatting, verify that both agents returned valid JSON:
+
+```bash
+# Test if agent output is valid JSON
+echo "$CODE_REVIEW_JSON" | jq empty
+echo "$ARCH_REVIEW_JSON" | jq empty
+
+# Check for required fields
+echo "$CODE_REVIEW_JSON" | jq -e '.type == "code" and has("verdict")' >/dev/null
+echo "$ARCH_REVIEW_JSON" | jq -e '.type == "architecture"' >/dev/null
+```
+
+If validation fails:
+
+- Agent likely output markdown instead of JSON
+- Check that "OUTPUT_FORMAT=JSON" was in delegation prompt
+- Re-run agents with correct prompt
+
+**5. Format Review Comments**
 
 Both `code-reviewer` and `software-architect` agents output **structured JSON**. Use the `format-review` script to generate consistent markdown comments.
 
@@ -136,9 +167,19 @@ $ARCH_COMMENT"
 - ✅ **Automatic section skipping** - empty sections omitted
 - ✅ **Validated structure** - ensures required fields exist
 
-**5. Post Review Comment**
+**6. Post Review Comment**
 
 After formatting, **ask user** if they want to publish the comment to MR/PR.
+
+**MANDATORY**: Verify formatted output is not empty before asking to post:
+
+```bash
+# Check if formatted output has content
+if [ -z "$FINAL_COMMENT" ] || [ "$FINAL_COMMENT" = "" ]; then
+  echo "ERROR: Formatted review is empty. Check agent JSON output."
+  exit 1
+fi
+```
 
 **IMPORTANT**: Always use the `post-comment` command (never use `glab` or `gh` directly):
 

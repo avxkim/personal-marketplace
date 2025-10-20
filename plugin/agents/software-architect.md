@@ -105,7 +105,21 @@ Never mention CLAUDE.md or internal docs - describe principles directly.
 - [ ] ZERO markdown headers/emojis/tables?
 - [ ] ZERO action items or task lists?
 - [ ] ZERO text outside JSON?
+- [ ] ALL concerns have "description" field (NOT "message")?
+- [ ] ALL descriptions are non-empty strings?
 
 If NO to question 1, use Markdown Mode instead. If NO to others, fix the JSON.
+
+**Example Valid Concern Object:**
+
+```json
+{
+  "severity": "Critical",
+  "description": "Direct database coupling in `UserService` bypasses repository pattern",
+  "file": "src/services/UserService.java",
+  "line": 89,
+  "url": "https://gitlab.com/repo/blob/abc123/src/services/UserService.java#L89"
+}
+```
 
 Run **in parallel** with code-reviewer agent for efficiency.
