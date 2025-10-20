@@ -149,20 +149,17 @@ VCS_TOOL=$(for path in $(jq -r 'to_entries[] | .value.installLocation + "/plugin
 # Step 2: Detect platform (if not already set)
 PLATFORM=$("$VCS_TOOL" detect-platform)
 
-# Step 3: Extract issue number from MR/PR URL or use the number directly
-# For GitLab: extract from URL like https://gitlab.com/owner/repo/-/merge_requests/123
-# For GitHub: extract from URL like https://github.com/owner/repo/pull/123
-# Or if $ARGUMENTS is just a number, use it directly
-ISSUE_NUMBER=$(echo "$ARGUMENTS" | grep -oE '[0-9]+' | tail -1)
-
-# Step 4: Post the comment
-echo "$FINAL_COMMENT" | "$VCS_TOOL" post-comment "$PLATFORM" "$ISSUE_NUMBER" -
+# Step 3: Post the comment using the full URL from $ARGUMENTS
+# The post-comment script will automatically extract repo info and MR/PR number from the URL
+# It also supports just a number if you're in the correct repo directory
+echo "$FINAL_COMMENT" | "$VCS_TOOL" post-comment "$PLATFORM" "$ARGUMENTS" -
 ```
 
 **Why use post-comment instead of glab/gh directly?**
 
 - ✅ Unified interface for both GitLab and GitHub
 - ✅ Proper stdin handling for long comments (no escaping issues)
+- ✅ Automatic repo detection from URL (works regardless of current directory)
 - ✅ Consistent error messages
 - ✅ Centralized with other VCS operations
 
@@ -170,4 +167,5 @@ echo "$FINAL_COMMENT" | "$VCS_TOOL" post-comment "$PLATFORM" "$ISSUE_NUMBER" -
 
 - Always use stdin with `-` for formatted reviews (they're long and multiline)
 - DON'T publish automatically - always ask user first!
-- The command handles platform differences automatically
+- The command handles platform differences and repo extraction automatically
+- Passing the full URL is recommended (script will extract repo owner/name and MR/PR number)

@@ -3,14 +3,42 @@
 import sys
 import subprocess
 import json
+import re
 
 
-def post_gitlab_comment(mr_number, comment):
+def parse_gitlab_url(url):
+    """Extract repo owner/name and MR number from GitLab URL."""
+    match = re.match(r'https?://gitlab\.com/([\w\-./]+?)/-/merge_requests/(\d+)', url)
+    if match:
+        return match.group(1), match.group(2)
+    return None, None
+
+
+def parse_github_url(url):
+    """Extract repo owner/name and PR number from GitHub URL."""
+    match = re.match(r'https?://github\.com/([^/]+/[^/]+)/pull/(\d+)', url)
+    if match:
+        return match.group(1), match.group(2)
+    return None, None
+
+
+def post_gitlab_comment(mr_identifier, comment):
     """Post comment to GitLab merge request."""
     try:
-        # Use heredoc pattern to avoid escaping issues
+        cmd = ["glab", "mr", "note"]
+
+        if mr_identifier.startswith('http'):
+            repo, mr_number = parse_gitlab_url(mr_identifier)
+            if not repo or not mr_number:
+                return False, f"Error: Could not parse GitLab URL: {mr_identifier}"
+            cmd.extend(["--repo", repo, mr_number])
+        else:
+            cmd.append(mr_identifier)
+
+        cmd.extend(["-m", comment])
+
         result = subprocess.run(
-            ["glab", "mr", "note", mr_number, "-m", comment],
+            cmd,
             capture_output=True,
             text=True,
             check=True
@@ -22,11 +50,23 @@ def post_gitlab_comment(mr_number, comment):
         return False, "Error: glab CLI not found. Install with: brew install glab"
 
 
-def post_github_comment(pr_number, comment):
+def post_github_comment(pr_identifier, comment):
     """Post comment to GitHub pull request."""
     try:
+        cmd = ["gh", "pr", "comment"]
+
+        if pr_identifier.startswith('http'):
+            repo, pr_number = parse_github_url(pr_identifier)
+            if not repo or not pr_number:
+                return False, f"Error: Could not parse GitHub URL: {pr_identifier}"
+            cmd.extend(["--repo", repo, pr_number])
+        else:
+            cmd.append(pr_identifier)
+
+        cmd.extend(["--body", comment])
+
         result = subprocess.run(
-            ["gh", "pr", "comment", pr_number, "--body", comment],
+            cmd,
             capture_output=True,
             text=True,
             check=True
@@ -40,14 +80,18 @@ def post_github_comment(pr_number, comment):
 
 def main():
     if len(sys.argv) < 4:
-        print("Usage: post_comment.py <platform> <issue_number> <comment>", file=sys.stderr)
+        print("Usage: post_comment.py <platform> <url_or_number> <comment>", file=sys.stderr)
         print("  platform: 'gitlab' or 'github'", file=sys.stderr)
-        print("  issue_number: MR/PR number", file=sys.stderr)
+        print("  url_or_number: Full MR/PR URL or just the number (URL recommended)", file=sys.stderr)
         print("  comment: Comment text (use stdin with '-' for long comments)", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("Examples:", file=sys.stderr)
+        print("  post_comment.py gitlab https://gitlab.com/owner/repo/-/merge_requests/123 -", file=sys.stderr)
+        print("  post_comment.py github 456 'Short comment'", file=sys.stderr)
         sys.exit(1)
 
     platform = sys.argv[1].lower()
-    issue_number = sys.argv[2]
+    url_or_number = sys.argv[2]
 
     # Support stdin for long comments
     if sys.argv[3] == "-":
@@ -65,15 +109,16 @@ def main():
 
     # Post comment based on platform
     if platform == "gitlab":
-        success, message = post_gitlab_comment(issue_number, comment)
+        success, message = post_gitlab_comment(url_or_number, comment)
     elif platform == "github":
-        success, message = post_github_comment(issue_number, comment)
+        success, message = post_github_comment(url_or_number, comment)
     else:
         print(f"Error: Invalid platform '{platform}'. Use 'gitlab' or 'github'", file=sys.stderr)
         sys.exit(1)
 
     if success:
-        print(f"✅ Comment posted successfully to {platform.title()} #{issue_number}")
+        identifier_display = url_or_number if not url_or_number.startswith('http') else f"MR/PR from {url_or_number}"
+        print(f"✅ Comment posted successfully to {platform.title()}: {identifier_display}")
         if message:
             print(message)
         sys.exit(0)
