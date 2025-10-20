@@ -92,13 +92,15 @@ Before formatting, verify that both agents returned valid JSON:
 
 ```bash
 # Test if agent output is valid JSON
-echo "$CODE_REVIEW_JSON" | jq empty
-echo "$ARCH_REVIEW_JSON" | jq empty
+printf '%s' "$CODE_REVIEW_JSON" | jq empty
+printf '%s' "$ARCH_REVIEW_JSON" | jq empty
 
 # Check for required fields
-echo "$CODE_REVIEW_JSON" | jq -e '.type == "code" and has("verdict")' >/dev/null
-echo "$ARCH_REVIEW_JSON" | jq -e '.type == "architecture"' >/dev/null
+printf '%s' "$CODE_REVIEW_JSON" | jq -e '.type == "code" and has("verdict")' >/dev/null
+printf '%s' "$ARCH_REVIEW_JSON" | jq -e '.type == "architecture"' >/dev/null
 ```
+
+**IMPORTANT**: Use `printf '%s'` instead of `echo` to avoid interpretation issues with backticks.
 
 If validation fails:
 
@@ -110,17 +112,49 @@ If validation fails:
 
 Both `code-reviewer` and `software-architect` agents output **structured JSON**. Use the `format-review` script to generate consistent markdown comments.
 
-**CRITICAL - MUST Use Heredoc Pattern:**
+**CRITICAL - JSON Passing Patterns:**
 
-⚠️ **DO NOT** pass JSON as command-line argument - it will fail with escape errors!
-✅ **ALWAYS** use heredoc with stdin (the `-` argument tells script to read from stdin)
+⚠️ **NEVER** pass JSON as command-line argument - it will fail with escape errors!
+✅ **ALWAYS** pipe to stdin using the `-` argument
+
+**Choose the correct pattern based on your situation:**
+
+### Pattern A: When you have JSON in a bash variable (from agent output)
 
 ```bash
 # Step 1: Locate the VCS tool
 VCS_TOOL=$(for path in $(jq -r 'to_entries[] | .value.installLocation + "/plugin/skills/vcs-tool-manager/vcs-tool.sh"' ~/.claude/plugins/known_marketplaces.json); do [ -f "$path" ] && echo "$path" && break; done)
 
-# Step 2: Format code review JSON
-# IMPORTANT: Use heredoc (cat <<'EOF' | command -) to pass JSON via stdin
+# Step 2: Get JSON from code-reviewer agent (example variable)
+CODE_REVIEW_JSON='{"type":"code","verdict":"PASS",...}'
+
+# Step 3: Format code review - use printf to avoid backtick interpretation
+CODE_COMMENT=$(printf '%s' "$CODE_REVIEW_JSON" | "$VCS_TOOL" format-review -)
+
+# Step 4: Get JSON from software-architect agent
+ARCH_REVIEW_JSON='{"type":"architecture","concerns":[...]}'
+
+# Step 5: Format architecture review
+ARCH_COMMENT=$(printf '%s' "$ARCH_REVIEW_JSON" | "$VCS_TOOL" format-review -)
+
+# Step 6: Combine both formatted comments
+FINAL_COMMENT="$CODE_COMMENT
+
+---
+
+$ARCH_COMMENT"
+```
+
+**Why `printf '%s'` instead of `echo`?**
+
+- `printf '%s'` outputs the variable exactly as-is without interpretation
+- `echo` may interpret escape sequences and cause issues
+- This prevents bash from treating backticks in JSON as command substitution
+
+### Pattern B: When you're testing with literal JSON (for examples/debugging)
+
+```bash
+# Use heredoc with single quotes for literal JSON
 CODE_COMMENT=$(cat <<'EOF_CODE' | "$VCS_TOOL" format-review -
 {
   "type": "code",
@@ -131,30 +165,11 @@ CODE_COMMENT=$(cat <<'EOF_CODE' | "$VCS_TOOL" format-review -
 }
 EOF_CODE
 )
-
-# Step 3: Format architecture review JSON
-# IMPORTANT: Use heredoc (cat <<'EOF' | command -) to pass JSON via stdin
-ARCH_COMMENT=$(cat <<'EOF_ARCH' | "$VCS_TOOL" format-review -
-{
-  "type": "architecture",
-  "strengths": [],
-  "concerns": [],
-  "compliance": []
-}
-EOF_ARCH
-)
-
-# Step 4: Combine both formatted comments
-FINAL_COMMENT="$CODE_COMMENT
-
----
-
-$ARCH_COMMENT"
 ```
 
-**Pattern Explanation:**
+**Heredoc Pattern Explanation:**
 
-- `cat <<'EOF_CODE'` - Start heredoc (the quotes prevent variable expansion)
+- `cat <<'EOF_CODE'` - Start heredoc (single quotes prevent variable expansion)
 - Paste the entire JSON object here (can be multiple lines)
 - `EOF_CODE` - End heredoc marker
 - `| "$VCS_TOOL" format-review -` - Pipe to script, `-` means read from stdin

@@ -110,10 +110,26 @@ Generates: `https://gitlab.com/org/repo/-/blob/SHA/path/file.ts#L42`
 
 ### 6. Format Review Comment
 
-**CRITICAL**: Use heredoc pattern to avoid JSON escaping errors!
+**CRITICAL**: Never pass JSON as command-line argument - always use stdin!
+
+**Pattern A: JSON in a variable (typical agent output scenario)**
 
 ```bash
-# Format code review
+# When you have JSON from agent in a variable
+CODE_REVIEW_JSON='{"type":"code",...}'
+
+# Use printf (NOT echo) to avoid backtick interpretation
+CODE_COMMENT=$(printf '%s' "$CODE_REVIEW_JSON" | "$VCS_TOOL" format-review -)
+
+# Same for architecture review
+ARCH_REVIEW_JSON='{"type":"architecture",...}'
+ARCH_COMMENT=$(printf '%s' "$ARCH_REVIEW_JSON" | "$VCS_TOOL" format-review -)
+```
+
+**Pattern B: Literal JSON (for examples/testing)**
+
+```bash
+# Use heredoc with single quotes for literal JSON
 CODE_COMMENT=$(cat <<'EOF_CODE' | "$VCS_TOOL" format-review -
 {
   "type": "code",
@@ -124,20 +140,13 @@ CODE_COMMENT=$(cat <<'EOF_CODE' | "$VCS_TOOL" format-review -
 }
 EOF_CODE
 )
-
-# Format architecture review
-ARCH_COMMENT=$(cat <<'EOF_ARCH' | "$VCS_TOOL" format-review -
-{
-  "type": "architecture",
-  "strengths": [...],
-  "concerns": [...],
-  "compliance": [...]
-}
-EOF_ARCH
-)
 ```
 
-**Why heredoc?** Passing JSON as command-line argument fails with escape errors. The `-` argument tells the script to read from stdin.
+**Why `printf '%s'` instead of `echo`?**
+
+- Prevents bash from interpreting backticks in JSON as command substitution
+- Outputs variable exactly as-is without escape sequence interpretation
+- Essential when JSON contains code snippets with backticks
 
 ### 7. Post Comment to MR/PR
 

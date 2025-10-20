@@ -216,7 +216,12 @@ else
     METADATA=$("$VCS_TOOL" get-github-pr "$ISSUE_NUMBER")
 fi
 
+# In real usage, you would get JSON from agent output:
+# CODE_REVIEW_JSON=$(agent output...)
+# But for this example, we'll use heredoc to show the JSON structure:
+
 # Format code review (from code-reviewer agent output)
+# NOTE: Use heredoc for literal JSON in examples, use printf with variables in real code
 CODE_COMMENT=$(cat <<'EOF_CODE' | "$VCS_TOOL" format-review -
 {
   "type": "code",
@@ -242,13 +247,10 @@ EOF_CODE
 )
 
 # Format architecture review (from software-architect agent output)
+# NOTE: Use heredoc for literal JSON in examples, use printf with variables in real code
 ARCH_COMMENT=$(cat <<'EOF_ARCH' | "$VCS_TOOL" format-review -
 {
   "type": "architecture",
-  "strengths": [
-    "Clear layered architecture",
-    "Proper dependency injection"
-  ],
   "concerns": [
     {
       "severity": "Major",
@@ -257,14 +259,14 @@ ARCH_COMMENT=$(cat <<'EOF_ARCH' | "$VCS_TOOL" format-review -
       "line": 156,
       "url": "https://gitlab.com/.../Controller.java#L156"
     }
-  ],
-  "compliance": [
-    "Violates separation of concerns",
-    "DRY principle maintained"
   ]
 }
 EOF_ARCH
 )
+
+# ALTERNATIVE: If you have JSON in variables (real agent output scenario):
+# CODE_COMMENT=$(printf '%s' "$CODE_REVIEW_JSON" | "$VCS_TOOL" format-review -)
+# ARCH_COMMENT=$(printf '%s' "$ARCH_REVIEW_JSON" | "$VCS_TOOL" format-review -)
 
 # Combine both reviews
 FINAL_COMMENT="$CODE_COMMENT
