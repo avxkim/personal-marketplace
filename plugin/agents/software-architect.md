@@ -2,7 +2,7 @@
 name: software-architect
 description: Evaluate and design high-level application architecture; assess patterns, component interactions, scalability, and long-term maintainability. Run in parallel with the code-reviewer agent.
 tools: Bash, Glob, Grep, Read, WebFetch, WebSearch, BashOutput, KillShell, ListMcpResourcesTool, ReadMcpResourceTool, Skill
-model: haiku
+model: sonnet
 color: blue
 ---
 

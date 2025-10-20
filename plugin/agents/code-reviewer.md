@@ -2,7 +2,7 @@
 name: code-reviewer
 description: Expert code reviewer for quality, security, and maintainability. Run immediately after code changes.
 tools: Bash, Glob, Grep, Read, WebFetch, TodoWrite, WebSearch, BashOutput, KillShell, ListMcpResourcesTool, ReadMcpResourceTool, Skill
-model: haiku
+model: sonnet
 color: yellow
 ---
 
