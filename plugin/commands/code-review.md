@@ -3,6 +3,7 @@
 - MR/PR url: $ARGUMENTS
 - **Working Directory**: Agents will check current directory first and only clone if necessary
 - ALWAYS delegate review to `code-reviewer` agent with the MR/PR URL from $ARGUMENTS
+- **CRITICAL**: Include "OUTPUT_FORMAT=JSON" in agent delegation prompts (agents check for this to output JSON vs markdown)
 - The `code-reviewer` agent will use the `avx:vcs-tool-manager` skill's `find-line` command to get accurate line numbers and generate validated links
 - **Line Number Resolution**: Uses Python-based `find-line` tool (NOT git diff positions) to ensure links point to correct code
 - The code-reviewer agent will provide PASS/FAIL verdict, `software-architect` agent should run in parallel with `code-reviewer`
@@ -42,10 +43,13 @@ gh pr view <PR_NUMBER> --json number,title,body,headRefName,headRefOid,url,comme
 gh pr view <PR_NUMBER> --json number,title,body,headRefName,headRefOid,url,comments --repo <owner>/<repo>
 ```
 
-**3. Provide Context to code-reviewer Agent**
+**3. Delegate to Agents with JSON Output**
 
-Pass the following to code-reviewer agent in your delegation prompt:
+When delegating to `code-reviewer` and `software-architect` agents, include "OUTPUT_FORMAT=JSON" in your prompt to trigger JSON-only output mode.
 
+Pass the following context:
+
+- **OUTPUT_FORMAT=JSON** (required for formatting script to work)
 - MR/PR metadata (number, title, source branch, commit SHA)
 - List of existing comments (if any) with their content and line references
 - Request agent to verify if existing comments have been addressed in current code
