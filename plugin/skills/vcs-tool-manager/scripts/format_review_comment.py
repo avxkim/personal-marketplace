@@ -92,14 +92,6 @@ def format_architecture_review(data: Dict) -> str:
     """Format architecture review comment."""
     lines = ["# Architecture Assessment 🏗️\n"]
 
-    # Strengths
-    strengths = data.get("strengths", [])
-    if strengths:
-        lines.append("## ✅ Strengths\n")
-        for strength in strengths:
-            lines.append(f"- {strength}")
-        lines.append("\n---\n")
-
     # Concerns
     concerns = data.get("concerns", [])
     if concerns:
@@ -128,16 +120,6 @@ def format_architecture_review(data: Dict) -> str:
             else:
                 # No file path - just show description with severity
                 lines.append(f"{idx}. {severity_emoji} **{severity.title()}**: {desc}\n")
-
-        lines.append("---\n")
-
-    # Architecture Compliance
-    compliance = data.get("compliance", [])
-    if compliance:
-        lines.append("## 📋 Architecture Compliance\n")
-        for item in compliance:
-            lines.append(f"- {item}")
-        lines.append("")
 
     return "\n".join(lines)
 
