@@ -85,6 +85,8 @@ Never mention CLAUDE.md or internal docs - describe principles directly.
 }
 ```
 
+**CRITICAL**: Use "description" field, NOT "message" field.
+
 **Severity** (for concerns):
 
 - **Critical**: Anti-patterns, cyclic deps, major scalability/security issues

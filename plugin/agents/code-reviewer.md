@@ -91,6 +91,8 @@ LINE=$(echo "$LINE_INFO" | jq -r '.line')
 }
 ```
 
+**CRITICAL**: Use "description" field, NOT "message" field.
+
 **Severity**:
 
 - **critical**: Security, breaking changes, data loss, critical bugs (blocks merge)

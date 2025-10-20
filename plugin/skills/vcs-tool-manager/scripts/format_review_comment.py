@@ -17,7 +17,7 @@ def format_code_review(data: Dict) -> str:
             file_path = issue.get("file", "Unknown")
             line = issue.get("line")
             url = issue.get("url", "")
-            desc = issue.get("description", "")
+            desc = issue.get("description") or issue.get("message", "")
 
             # Extract just the filename from full path
             filename = file_path.split("/")[-1] if "/" in file_path else file_path
@@ -39,7 +39,7 @@ def format_code_review(data: Dict) -> str:
             file_path = issue.get("file", "Unknown")
             line = issue.get("line")
             url = issue.get("url", "")
-            desc = issue.get("description", "")
+            desc = issue.get("description") or issue.get("message", "")
 
             # Extract just the filename from full path
             filename = file_path.split("/")[-1] if "/" in file_path else file_path
@@ -61,7 +61,7 @@ def format_code_review(data: Dict) -> str:
             file_path = issue.get("file", "Unknown")
             line = issue.get("line")
             url = issue.get("url", "")
-            desc = issue.get("description", "")
+            desc = issue.get("description") or issue.get("message", "")
 
             # Extract just the filename from full path
             filename = file_path.split("/")[-1] if "/" in file_path else file_path
@@ -98,7 +98,7 @@ def format_architecture_review(data: Dict) -> str:
         lines.append("## ⚠️ Architectural Concerns\n")
         for idx, concern in enumerate(concerns, 1):
             severity = concern.get("severity", "Unknown")
-            desc = concern.get("description", "")
+            desc = concern.get("description") or concern.get("message", "")
             file_path = concern.get("file")
             line = concern.get("line")
             url = concern.get("url")

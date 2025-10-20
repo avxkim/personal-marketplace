@@ -4,14 +4,15 @@ import sys
 import subprocess
 import json
 import re
+import os
 
 
 def parse_gitlab_url(url):
-    """Extract repo owner/name and MR number from GitLab URL."""
-    match = re.match(r'https?://gitlab\.com/([\w\-./]+?)/-/merge_requests/(\d+)', url)
+    """Extract host, repo owner/name and MR number from GitLab URL."""
+    match = re.match(r'https?://([^/]+)/([\w\-./]+?)/-/merge_requests/(\d+)', url)
     if match:
-        return match.group(1), match.group(2)
-    return None, None
+        return match.group(1), match.group(2), match.group(3)
+    return None, None, None
 
 
 def parse_github_url(url):
@@ -26,11 +27,17 @@ def post_gitlab_comment(mr_identifier, comment):
     """Post comment to GitLab merge request."""
     try:
         cmd = ["glab", "mr", "note"]
+        env = None
 
         if mr_identifier.startswith('http'):
-            repo, mr_number = parse_gitlab_url(mr_identifier)
-            if not repo or not mr_number:
+            host, repo, mr_number = parse_gitlab_url(mr_identifier)
+            if not host or not repo or not mr_number:
                 return False, f"Error: Could not parse GitLab URL: {mr_identifier}"
+
+            if host.lower() != "gitlab.com":
+                env = os.environ.copy()
+                env["GITLAB_HOST"] = host
+
             cmd.extend(["--repo", repo, mr_number])
         else:
             cmd.append(mr_identifier)
@@ -41,7 +48,8 @@ def post_gitlab_comment(mr_identifier, comment):
             cmd,
             capture_output=True,
             text=True,
-            check=True
+            check=True,
+            env=env
         )
         return True, result.stdout.strip()
     except subprocess.CalledProcessError as e:
@@ -87,7 +95,8 @@ def main():
         print("", file=sys.stderr)
         print("Examples:", file=sys.stderr)
         print("  post_comment.py gitlab https://gitlab.com/owner/repo/-/merge_requests/123 -", file=sys.stderr)
-        print("  post_comment.py github 456 'Short comment'", file=sys.stderr)
+        print("  post_comment.py gitlab https://gitlab.example.com/owner/repo/-/merge_requests/456 -", file=sys.stderr)
+        print("  post_comment.py github 789 'Short comment'", file=sys.stderr)
         sys.exit(1)
 
     platform = sys.argv[1].lower()
