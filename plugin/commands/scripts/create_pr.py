@@ -92,13 +92,21 @@ def find_nested_repos(root_path):
 
     return nested_repos
 
-def has_changes(repo_path):
+def has_changes(repo_path, target_branch=None):
     _, code = run_command("git diff --quiet HEAD", cwd=repo_path, check=False)
     if code != 0:
         return True
 
     status, _ = run_command("git status --porcelain", cwd=repo_path)
-    return bool(status.strip())
+    if status.strip():
+        return True
+
+    if target_branch:
+        commits, code = run_command(f"git rev-list --count HEAD ^{target_branch}", cwd=repo_path, check=False)
+        if code == 0 and commits.strip() and int(commits.strip()) > 0:
+            return True
+
+    return False
 
 def get_cli_help(platform):
     if platform == "github":
@@ -173,7 +181,11 @@ def main():
     print(f"\nChecking CLI version...")
     get_cli_help(platform)
 
-    success = create_pr_mr(platform, source, target, title, description, assignee, root_path)
+    if not has_changes(root_path, target):
+        print(f"\n⚠ No changes detected in main repository, skipping PR/MR creation...")
+        success = True
+    else:
+        success = create_pr_mr(platform, source, target, title, description, assignee, root_path)
 
     nested_repos = find_nested_repos(root_path)
     if nested_repos:
@@ -184,10 +196,11 @@ def main():
         for nested_repo in nested_repos:
             print(f"\n→ Checking: {nested_repo}")
 
-            if has_changes(nested_repo):
-                nested_platform = detect_platform(nested_repo)
-                nested_branch = get_current_branch(nested_repo)
-                nested_default = get_default_branch(nested_platform, nested_repo)
+            nested_platform = detect_platform(nested_repo)
+            nested_branch = get_current_branch(nested_repo)
+            nested_default = get_default_branch(nested_platform, nested_repo)
+
+            if has_changes(nested_repo, nested_default):
                 nested_task_id = extract_task_id(nested_branch)
                 nested_title = generate_title(nested_branch, nested_task_id)
                 nested_description = generate_description(nested_task_id)
