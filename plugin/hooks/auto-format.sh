@@ -18,8 +18,20 @@ formatter_msg=""
 
 case "$file_path" in
     *.js|*.jsx|*.ts|*.tsx|*.vue|*.mjs|*.cjs)
-        npx prettier --write "$file_path" 2>/dev/null || true
-        npx eslint --fix "$file_path" 2>/dev/null || true
+        project_root=$(git rev-parse --show-toplevel 2>/dev/null)
+
+        if [ -n "$project_root" ] && [ -f "$project_root/node_modules/.bin/prettier" ]; then
+            (cd "$project_root" && ./node_modules/.bin/prettier --write "$file_path") 2>/dev/null || true
+        else
+            npx prettier --write "$file_path" 2>/dev/null || true
+        fi
+
+        if [ -n "$project_root" ] && [ -f "$project_root/node_modules/.bin/eslint" ]; then
+            (cd "$project_root" && ./node_modules/.bin/eslint --fix "$file_path") 2>/dev/null || true
+        else
+            npx eslint --fix "$file_path" 2>/dev/null || true
+        fi
+
         formatter_msg="prettier + eslint"
         ;;
     *.py)
@@ -48,24 +60,15 @@ case "$file_path" in
         google-java-format -i "$file_path" 2>/dev/null || true
         formatter_msg="google-java-format"
         ;;
-    *.css|*.scss|*.sass|*.less)
-        npx prettier --write "$file_path" 2>/dev/null || true
-        formatter_msg="prettier"
-        ;;
-    *.html|*.htm)
-        npx prettier --write "$file_path" 2>/dev/null || true
-        formatter_msg="prettier"
-        ;;
-    *.json)
-        npx prettier --write "$file_path" 2>/dev/null || true
-        formatter_msg="prettier"
-        ;;
-    *.yml|*.yaml)
-        npx prettier --write "$file_path" 2>/dev/null || true
-        formatter_msg="prettier"
-        ;;
-    *.md|*.markdown)
-        npx prettier --write "$file_path" 2>/dev/null || true
+    *.css|*.scss|*.sass|*.less|*.html|*.htm|*.json|*.yml|*.yaml|*.md|*.markdown)
+        project_root=$(git rev-parse --show-toplevel 2>/dev/null)
+
+        if [ -n "$project_root" ] && [ -f "$project_root/node_modules/.bin/prettier" ]; then
+            (cd "$project_root" && ./node_modules/.bin/prettier --write "$file_path") 2>/dev/null || true
+        else
+            npx prettier --write "$file_path" 2>/dev/null || true
+        fi
+
         formatter_msg="prettier"
         ;;
     *.dart)
