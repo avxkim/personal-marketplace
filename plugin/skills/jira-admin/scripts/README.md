@@ -1,4 +1,4 @@
-# Atlassian Admin Scripts - Installation Guide
+# Jira Admin Scripts - Installation Guide
 
 ## Prerequisites
 
@@ -8,12 +8,20 @@
 
 ```bash
 export JIRA_<COMPANY>_URL="https://jira.example.com"
-export JIRA_<COMPANY>_TOKEN="base64-encoded-token"
-export CONFLUENCE_<COMPANY>_URL="https://confluence.example.com"
-export CONFLUENCE_<COMPANY>_TOKEN="base64-encoded-token"
+export JIRA_<COMPANY>_TOKEN="base64-encoded-userid:token"
 ```
 
 ## Generating API Tokens
+
+### Jira Server/Data Center
+
+For self-hosted Jira instances:
+
+1. Go to your Jira instance (e.g., https://jira.deversin.com)
+2. Click your profile icon → **Personal Access Tokens**
+3. Click **Create token**
+4. Give it a label (e.g., "Claude Code")
+5. Copy the generated token
 
 ### Atlassian Cloud
 
@@ -22,15 +30,19 @@ export CONFLUENCE_<COMPANY>_TOKEN="base64-encoded-token"
 3. Give it a label (e.g., "Claude Code")
 4. Copy the token
 
-### Encode for Basic Auth
+### Encode for Bearer Auth
 
-Atlassian REST APIs use Basic Authentication with email + token:
+Jira Personal Access Tokens use Bearer Authentication with userid + token:
 
 ```bash
+# For self-hosted Jira (userid from your profile):
+echo -n "296979411732:your-pat-token" | base64
+
+# For Atlassian Cloud (email + API token):
 echo -n "your-email@example.com:your-api-token" | base64
 ```
 
-Use the output as `JIRA_<COMPANY>_TOKEN` or `CONFLUENCE_<COMPANY>_TOKEN`.
+Use the output as `JIRA_<COMPANY>_TOKEN`.
 
 ## Example Configuration
 
@@ -38,9 +50,7 @@ For company "4RA":
 
 ```bash
 export JIRA_4RA_URL="https://jira.deversin.com"
-export JIRA_4RA_TOKEN="$(echo -n 'alex@example.com:abc123xyz' | base64)"
-export CONFLUENCE_4RA_URL="https://confluence.deversin.com"
-export CONFLUENCE_4RA_TOKEN="$(echo -n 'alex@example.com:def456uvw' | base64)"
+export JIRA_4RA_TOKEN="$(echo -n '296979411732:abc123xyz' | base64)"
 ```
 
 Add to `~/.secrets` and source:
@@ -54,12 +64,12 @@ source ~/.secrets
 Test the setup:
 
 ```bash
-ATLASSIAN_TOOL=$(for path in $(jq -r 'to_entries[] | .value.installLocation + "/plugin/skills/atlassian-admin/atlassian-tool.sh"' ~/.claude/plugins/known_marketplaces.json); do [ -f "$path" ] && echo "$path" && break; done)
+JIRA_TOOL=$(jq -r '."personal-marketplace".installLocation' ~/.claude/plugins/known_marketplaces.json)/plugin/skills/jira-admin/jira-tool.sh
 
-"$ATLASSIAN_TOOL" discover
+"$JIRA_TOOL" discover
 ```
 
-Should show your configured instances.
+Should show your configured Jira instance(s).
 
 ## Common Issues
 
@@ -72,12 +82,12 @@ Should show your configured instances.
 
 - Token not base64 encoded correctly
 - Token expired or revoked
-- Wrong email/token combination
+- Wrong userid/token combination
 
 **"HTTP 404 Not Found"**
 
 - Wrong URL (check trailing slashes removed)
-- Project/space doesn't exist
+- Project/issue doesn't exist
 - Insufficient permissions
 
 ## Script Structure
@@ -85,20 +95,13 @@ Should show your configured instances.
 ```
 scripts/
 ├── jira_api.py              # Jira API wrapper class
-├── confluence_api.py        # Confluence API wrapper class
-├── discover.py              # Auto-discover instances
+├── discover.py              # Auto-discover Jira instances
 ├── jira_search_issues.py    # Search issues with JQL
 ├── jira_get_issue.py        # Get issue details
 ├── jira_create_issue.py     # Create issue
 ├── jira_update_issue.py     # Update issue
 ├── jira_list_sprints.py     # List sprints
-├── jira_get_sprint.py       # Get sprint details
-├── confluence_get_page.py   # Get page by URL/ID/space+title
-├── confluence_search.py     # Search with CQL
-├── confluence_create_page.py # Create page
-├── confluence_update_page.py # Update page
-├── confluence_list_spaces.py # List spaces
-└── confluence_list_pages.py  # List pages in space
+└── jira_get_sprint.py       # Get sprint details
 ```
 
 All scripts are standalone Python 3 files using only stdlib.
@@ -106,6 +109,10 @@ All scripts are standalone Python 3 files using only stdlib.
 ## API Documentation
 
 - [Jira REST API v2](https://developer.atlassian.com/cloud/jira/platform/rest/v2/)
-- [Confluence REST API](https://developer.atlassian.com/cloud/confluence/rest/)
 - [JQL Reference](https://support.atlassian.com/jira-software-cloud/docs/use-advanced-search-with-jira-query-language-jql/)
-- [CQL Reference](https://developer.atlassian.com/server/confluence/advanced-searching-using-cql/)
+
+## Authentication
+
+This tool uses **Bearer token authentication** - no nginx basic auth required.
+
+The token is sent as: `Authorization: Bearer <base64-token>`

@@ -3,7 +3,6 @@
 import os
 import sys
 import json
-import base64
 import urllib.request
 import urllib.parse
 import urllib.error
@@ -44,7 +43,7 @@ class JiraAPI:
             url = f"{url}?{query_string}"
 
         headers = {
-            "Authorization": f"Basic {self.token}",
+            "Authorization": f"Bearer {self.token}",
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
