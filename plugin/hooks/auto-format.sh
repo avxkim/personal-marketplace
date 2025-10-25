@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if ! command -v jq >/dev/null 2>&1; then
+    exit 0
+fi
+
 hook_data=$(cat)
 
 file_path=$(echo "$hook_data" | jq -r '.toolOutput.file // .toolOutput.path // .toolOutput.file_path // .tool_input.file_path // empty')

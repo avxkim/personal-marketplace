@@ -1,0 +1,13 @@
+## Refactor auto-format.sh Hook
+
+**Improvements:**
+
+1. Add jq dependency check at script start
+2. Validate git operations before using `$project_root`
+3. Update hooks.json matcher to include NotebookEdit
+4. Add clarifying comments for SQL fallback logic
+5. Minor cleanup and better code organization
+
+**Files to modify:**
+- `plugin/hooks/auto-format.sh` - Add validation, comments, cleanup
+- `plugin/hooks/hooks.json` - Update matcher pattern
