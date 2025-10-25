@@ -58,11 +58,11 @@ All agents are defined in `plugin/agents/` as Markdown files with YAML frontmatt
    - Runs after code-reviewer/software-architect approval
    - Maintains README, CHANGELOG, API docs, architecture docs
 
-4. **librarian** (`librarian.md`)
+4. **lib** (`lib.md`)
    - Uses Haiku model
    - Fetches up-to-date documentation using Context7 MCP
-   - Should be used immediately when documentation is needed
-   - Never use WebFetch/WebSearch for documentation - always use librarian
+   - MUST be used immediately when documentation is needed
+   - Never use WebFetch/WebSearch for documentation - always use lib
 
 5. **web-qa** (`web-qa.md`)
    - Uses Haiku model
@@ -233,7 +233,7 @@ This repository heavily integrates with GitLab and GitHub:
 2. **Parallel Execution**: Run code-reviewer and software-architect in parallel for efficiency
 3. **No Comments in Code**: Project standard prohibits code comments in all generated code
 4. **Confidence Scoring**: Code-reviewer only reports issues with ≥80% confidence
-5. **MCP Integration**: Leverage Context7 (librarian), chrome-devtools (web-qa), and dbhub (dbadmin) MCPs
+5. **MCP Integration**: Leverage Context7 (lib), chrome-devtools (web-qa), and dbhub (dbadmin) MCPs
 6. **Documentation Structure**: All docs in `.docs/` following specific hierarchy
 7. **Auto-Formatting**: Hooks automatically format code after edits (fails silently if tools not installed)
 
