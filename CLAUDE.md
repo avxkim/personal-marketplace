@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a personal Claude Code marketplace repository that contains custom agents, commands, and hooks. The repository structure follows the Claude Code plugin marketplace format with:
 
 - `.claude-plugin/marketplace.json` - Marketplace configuration
-- `personal-plugin/` - Main plugin directory containing all custom agents and commands
+- `plugin/` - Main plugin directory containing all custom agents and commands
 
 ## Repository Structure
 
@@ -15,7 +15,7 @@ This is a personal Claude Code marketplace repository that contains custom agent
 personal-marketplace/
 ├── .claude-plugin/
 │   └── marketplace.json
-└── personal-plugin/
+└── plugin/
     ├── .claude-plugin/
     │   └── plugin.json
     ├── agents/           # Custom agent definitions
@@ -28,7 +28,7 @@ personal-marketplace/
 
 ## Agent Architecture
 
-All agents are defined in `personal-plugin/agents/` as Markdown files with YAML frontmatter. Each agent has:
+All agents are defined in `plugin/agents/` as Markdown files with YAML frontmatter. Each agent has:
 
 - **name**: Agent identifier
 - **description**: When/how to use the agent (may include usage examples)
@@ -52,9 +52,9 @@ All agents are defined in `personal-plugin/agents/` as Markdown files with YAML 
    - Should run in parallel with code-reviewer for non-trivial changes
    - Assesses scalability, component design, and technical debt
 
-3. **documentarian** (`documentarian.md`)
+3. **docs** (`docs.md`)
    - Uses Haiku model
-   - Manages all documentation in `.documentarian/` directory
+   - Manages all documentation in `.docs/` directory
    - Runs after code-reviewer/software-architect approval
    - Maintains README, CHANGELOG, API docs, architecture docs
 
@@ -83,7 +83,7 @@ All agents are defined in `personal-plugin/agents/` as Markdown files with YAML 
 
 ## Custom Slash Commands
 
-Commands are defined in `personal-plugin/commands/` as Markdown files.
+Commands are defined in `plugin/commands/` as Markdown files.
 
 ### `/pr` Command (`pr.md`)
 
@@ -107,7 +107,7 @@ Delegates to code-reviewer and software-architect agents:
 
 ## Auto-Formatting Hooks
 
-The plugin includes automatic formatting hooks configured in `personal-plugin/hooks/hooks.json` that trigger after any Edit/Write/MultiEdit operation using the `PostToolUse` event:
+The plugin includes automatic formatting hooks configured in `plugin/hooks/hooks.json` that trigger after any Edit/Write/MultiEdit operation using the `PostToolUse` event:
 
 ### Supported Languages and Tools
 
@@ -199,7 +199,7 @@ go install golang.org/x/tools/cmd/goimports@latest
 
 ### When Modifying Agents
 
-1. Edit agent Markdown files in `personal-plugin/agents/`
+1. Edit agent Markdown files in `plugin/agents/`
 2. Frontmatter format:
    ```yaml
    ---
@@ -214,7 +214,7 @@ go install golang.org/x/tools/cmd/goimports@latest
 
 ### When Modifying Commands
 
-1. Edit command Markdown files in `personal-plugin/commands/`
+1. Edit command Markdown files in `plugin/commands/`
 2. Commands use `$ARGUMENTS` variable for user input
 3. Commands should delegate to agents when appropriate
 
@@ -234,7 +234,7 @@ This repository heavily integrates with GitLab and GitHub:
 3. **No Comments in Code**: Project standard prohibits code comments in all generated code
 4. **Confidence Scoring**: Code-reviewer only reports issues with ≥80% confidence
 5. **MCP Integration**: Leverage Context7 (librarian), chrome-devtools (web-qa), and dbhub (dbadmin) MCPs
-6. **Documentation Structure**: All docs in `.documentarian/` following specific hierarchy
+6. **Documentation Structure**: All docs in `.docs/` following specific hierarchy
 7. **Auto-Formatting**: Hooks automatically format code after edits (fails silently if tools not installed)
 
 ## Testing and Quality
@@ -249,4 +249,4 @@ This repository heavily integrates with GitLab and GitHub:
 - Agents use different models based on complexity (Sonnet for complex tasks, Haiku for reviews)
 - CLI commands (gh/glab) must always verify syntax with --help due to frequent updates
 - File links in MR/PR comments must use commit SHA if branch contains special characters
-- Documentarian maintains separate `.documentarian/` directory for all project docs
+- docs agent maintains separate `.docs/` directory for all project docs
