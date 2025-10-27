@@ -17,7 +17,33 @@ VCS_TOOL=$(for path in $(jq -r 'to_entries[] | .value.installLocation + "/plugin
 PLATFORM=$("$VCS_TOOL" detect-platform)
 ```
 
-**2. Fetch MR/PR Details and Existing Comments**
+**2. Check Current Directory and Extract Repo Info**
+
+```bash
+# Check if we're in a git repository
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "ERROR: Not in a git repository. Navigate to repo or provide full MR/PR URL."
+  exit 1
+fi
+
+# Get current repo info
+CURRENT_REPO=$(git remote get-url origin | sed -E 's#^(https?://|git@)##' | sed -E 's#:#/#' | sed 's/\.git$//' | cut -d/ -f2-)
+
+# Extract repo from $ARGUMENTS if URL provided
+if [[ "$ARGUMENTS" =~ (gitlab|github)\.com/([^/]+/[^/]+) ]]; then
+  TARGET_REPO="${BASH_REMATCH[2]}"
+else
+  TARGET_REPO="$CURRENT_REPO"
+fi
+
+# Determine if --repo flag is needed
+REPO_FLAG=""
+if [ "$CURRENT_REPO" != "$TARGET_REPO" ]; then
+  REPO_FLAG="--repo $TARGET_REPO"
+fi
+```
+
+**3. Fetch MR/PR Details and Existing Comments**
 
 Extract MR/PR number from $ARGUMENTS (URL or number)
 
@@ -26,24 +52,16 @@ Extract MR/PR number from $ARGUMENTS (URL or number)
 **GitLab** (if PLATFORM=gitlab):
 
 ```bash
-# Fetch MR details with comments in one call
-glab mr view <MR_NUMBER> --comments --output json
-
-# If you're NOT in the repo directory, add --repo flag:
-glab mr view <MR_NUMBER> --comments --output json --repo <owner>/<repo>
+glab mr view <MR_NUMBER> --comments --output json $REPO_FLAG
 ```
 
 **GitHub** (if PLATFORM=github):
 
 ```bash
-# Fetch PR details with comments
-gh pr view <PR_NUMBER> --json number,title,body,headRefName,headRefOid,url,comments
-
-# If you're NOT in the repo directory, add --repo flag:
-gh pr view <PR_NUMBER> --json number,title,body,headRefName,headRefOid,url,comments --repo <owner>/<repo>
+gh pr view <PR_NUMBER> --json number,title,body,headRefName,headRefOid,url,comments $REPO_FLAG
 ```
 
-**3. Delegate to Agents with JSON Output**
+**4. Delegate to Agents with JSON Output**
 
 ⚠️ **CRITICAL**: You MUST include the exact string "OUTPUT_FORMAT=JSON" in your delegation prompt to both agents.
 
@@ -86,7 +104,7 @@ Pass the following context to agents:
 
 ## After Agent Reviews Complete:
 
-**4. Validate Agent JSON Output**
+**5. Validate Agent JSON Output**
 
 Before formatting, verify that both agents returned valid JSON:
 
@@ -108,7 +126,7 @@ If validation fails:
 - Check that "OUTPUT_FORMAT=JSON" was in delegation prompt
 - Re-run agents with correct prompt
 
-**5. Format Review Comments**
+**6. Format Review Comments**
 
 Both `code-reviewer` and `software-architect` agents output **structured JSON**. Use the `format-review` script to generate consistent markdown comments.
 
@@ -182,7 +200,7 @@ EOF_CODE
 - ✅ **Automatic section skipping** - empty sections omitted
 - ✅ **Validated structure** - ensures required fields exist
 
-**6. Post Review Comment**
+**7. Post Review Comment**
 
 After formatting, **ask user** if they want to publish the comment to MR/PR.
 
