@@ -1,6 +1,6 @@
 ---
 name: Redmine Admin
-description: Manage Redmine via REST API. ALWAYS use when user mentions Redmine URLs, issues, tasks, wiki pages, time entries, or projects. Handles reading wiki pages, managing issues, logging time, and generating reports.
+description: Manage Redmine via REST API. ALWAYS use when user mentions Redmine URLs, issues, tasks, wiki pages, time entries, or projects. Handles reading wiki pages, managing issues, posting QA comments with templates, logging time, and generating reports.
 allowed-tools: Bash, Read, Grep, WebFetch, BashOutput, KillShell
 ---
 
@@ -12,10 +12,11 @@ This skill provides utilities for managing Redmine project management system via
 
 1. **Wiki Pages**: Read wiki page content from URLs or project/page names
 2. **Issue Management**: List, create, update, and read issues
-3. **Time Entry Management**: Log time, retrieve time entries by user/date
-4. **Project Management**: List projects and their details
-5. **User Management**: Retrieve user information
-6. **Reporting**: Generate time reports for developers
+3. **QA Comments**: Post structured QA test results with emoji status templates (PASS/FAIL/BLOCKED)
+4. **Time Entry Management**: Log time, retrieve time entries by user/date
+5. **Project Management**: List projects and their details
+6. **User Management**: Retrieve user information
+7. **Reporting**: Generate time reports for developers
 
 ## When to Use This Skill
 
@@ -123,7 +124,48 @@ EOF
 
 Returns updated issue JSON.
 
-### 5. Log Time Entry
+### 5. Post QA Comment
+
+```bash
+# QA PASS
+cat <<'EOF' | "$REDMINE_TOOL" post-qa-comment -
+{
+  "issue_id": 564,
+  "status": "PASS",
+  "scope": "User authentication flow",
+  "environment": "staging"
+}
+EOF
+
+# QA FAIL with issues
+cat <<'EOF' | "$REDMINE_TOOL" post-qa-comment -
+{
+  "issue_id": 564,
+  "status": "FAIL",
+  "scope": "Payment processing",
+  "environment": "production",
+  "issues": [
+    "Card validation fails for Amex",
+    "Timeout on refund API"
+  ]
+}
+EOF
+
+# QA BLOCKED
+cat <<'EOF' | "$REDMINE_TOOL" post-qa-comment -
+{
+  "issue_id": 564,
+  "status": "BLOCKED",
+  "scope": "Email notifications",
+  "environment": "staging",
+  "blocker": "SMTP server unreachable"
+}
+EOF
+```
+
+Posts formatted QA comment with emoji status card (🟢 PASS, 🔴 FAIL, 🟡 BLOCKED).
+
+### 6. Log Time Entry
 
 ```bash
 cat <<'EOF' | "$REDMINE_TOOL" log-time -
@@ -139,7 +181,7 @@ EOF
 
 Returns created time entry JSON.
 
-### 6. Get Time Entries
+### 7. Get Time Entries
 
 ```bash
 # Get time entries for a specific user in date range
@@ -154,7 +196,7 @@ Returns created time entry JSON.
 
 Returns JSON array of time entries.
 
-### 7. Generate Time Report
+### 8. Generate Time Report
 
 ```bash
 # Monthly report for all users
@@ -169,7 +211,7 @@ Returns JSON array of time entries.
 
 Returns formatted report with total hours per user/issue.
 
-### 8. List Projects
+### 9. List Projects
 
 ```bash
 "$REDMINE_TOOL" list-projects
@@ -177,7 +219,7 @@ Returns formatted report with total hours per user/issue.
 
 Returns JSON array of all accessible projects.
 
-### 9. Get Current User
+### 10. Get Current User
 
 ```bash
 "$REDMINE_TOOL" get-current-user
@@ -185,7 +227,7 @@ Returns JSON array of all accessible projects.
 
 Returns JSON with current authenticated user details.
 
-### 10. List Users
+### 11. List Users
 
 ```bash
 # List all users
@@ -203,7 +245,7 @@ Returns JSON with current authenticated user details.
 
 Returns JSON array of users with optional status filtering (active/registered/locked).
 
-### 11. Get Wiki Page
+### 12. Get Wiki Page
 
 ```bash
 # Get wiki page by URL

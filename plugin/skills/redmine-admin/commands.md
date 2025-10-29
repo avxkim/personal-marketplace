@@ -308,6 +308,161 @@ EOF
 
 ---
 
+## Command: post-qa-comment
+
+**Purpose**: Post QA test result comment with emoji status card template.
+
+**Usage**:
+
+```bash
+cat <<'EOF' | "$REDMINE_TOOL" post-qa-comment -
+{
+  "issue_id": 564,
+  "status": "PASS",
+  "scope": "User authentication flow",
+  "environment": "staging"
+}
+EOF
+```
+
+**Required Fields**:
+
+- `issue_id`: Numeric issue ID to comment on
+- `status`: Test result (PASS, FAIL, or BLOCKED)
+- `scope`: What was tested (e.g., "Payment processing", "API endpoints")
+- `environment`: Where testing occurred (e.g., "staging", "production", "local")
+
+**Status-Specific Fields**:
+
+- **FAIL status** requires:
+  - `issues`: Array of issue descriptions found during testing
+- **BLOCKED status** requires:
+  - `blocker`: Reason why testing was blocked
+
+**Optional Fields**:
+
+- `notes`: Additional notes or context
+- `private`: Set to true for private comment (default: false)
+
+**Comment Templates**:
+
+**PASS Template** (no issues):
+
+```
+🟢 QA PASS
+📋 [scope] | 🌐 [environment]
+✓ No issues found
+```
+
+**FAIL Template** (with issues):
+
+```
+🔴 QA FAIL
+📋 [scope] | 🌐 [environment]
+⚠️ [count] issue(s):
+• [issue 1]
+• [issue 2]
+```
+
+**BLOCKED Template**:
+
+```
+🟡 QA BLOCKED
+📋 [scope] | 🌐 [environment]
+🚫 [blocker reason]
+```
+
+**Output** (JSON):
+
+```json
+{
+  "success": true,
+  "issue_id": "564",
+  "comment_length": 95,
+  "comment_preview": "🟢 QA PASS\n📋 User authentication flow | 🌐 staging\n✓ No issues found"
+}
+```
+
+**Examples**:
+
+```bash
+# PASS - Clean test
+cat <<'EOF' | "$REDMINE_TOOL" post-qa-comment -
+{
+  "issue_id": 564,
+  "status": "PASS",
+  "scope": "User authentication flow",
+  "environment": "staging"
+}
+EOF
+
+# FAIL - Issues found
+cat <<'EOF' | "$REDMINE_TOOL" post-qa-comment -
+{
+  "issue_id": 564,
+  "status": "FAIL",
+  "scope": "Payment processing",
+  "environment": "production",
+  "issues": [
+    "Card validation fails for Amex",
+    "Timeout on refund API (30s+)",
+    "Currency conversion rounding error"
+  ]
+}
+EOF
+
+# BLOCKED - Cannot proceed
+cat <<'EOF' | "$REDMINE_TOOL" post-qa-comment -
+{
+  "issue_id": 564,
+  "status": "BLOCKED",
+  "scope": "Email notifications",
+  "environment": "staging",
+  "blocker": "SMTP server unreachable"
+}
+EOF
+
+# PASS with additional notes
+cat <<'EOF' | "$REDMINE_TOOL" post-qa-comment -
+{
+  "issue_id": 564,
+  "status": "PASS",
+  "scope": "API endpoints",
+  "environment": "staging",
+  "notes": "Tested with 1000+ concurrent requests. Performance acceptable."
+}
+EOF
+
+# FAIL with private comment
+cat <<'EOF' | "$REDMINE_TOOL" post-qa-comment -
+{
+  "issue_id": 564,
+  "status": "FAIL",
+  "scope": "Security audit",
+  "environment": "production",
+  "issues": [
+    "XSS vulnerability in user input",
+    "SQL injection possible in search"
+  ],
+  "private": true
+}
+EOF
+```
+
+**Important Notes**:
+
+- Comment length is limited to 2000 characters (same as update-issue)
+- If generated comment exceeds limit, error will suggest shortening descriptions
+- Status values are case-insensitive but will be normalized to uppercase
+- Emoji status cards provide visual scanning in Redmine issue history
+
+**Exit Codes**:
+
+- 0: Success
+- 1: Error (missing required fields, invalid status, exceeds character limit, or API error)
+
+---
+
 ## Command: log-time
 
 **Purpose**: Log time entry for an issue.

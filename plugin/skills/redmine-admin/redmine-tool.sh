@@ -21,6 +21,9 @@ case "$command" in
     update-issue)
         python3 "$SCRIPTS_DIR/update_issue.py" "$@"
         ;;
+    post-qa-comment)
+        python3 "$SCRIPTS_DIR/post_qa_comment.py" "$@"
+        ;;
     log-time)
         python3 "$SCRIPTS_DIR/log_time.py" "$@"
         ;;
@@ -48,6 +51,7 @@ case "$command" in
         echo "  get-issue         - Get detailed information about an issue"
         echo "  create-issue      - Create a new issue"
         echo "  update-issue      - Update an existing issue"
+        echo "  post-qa-comment   - Post QA comment with emoji status template"
         echo "  log-time          - Log time entry for an issue"
         echo "  get-time-entries  - Get time entries with filters"
         echo "  time-report       - Generate time report"
@@ -60,7 +64,7 @@ case "$command" in
         ;;
     *)
         echo "Unknown command: $command" >&2
-        echo "Available commands: list-issues, get-issue, create-issue, update-issue, log-time, get-time-entries, time-report, list-projects, get-current-user, list-users, get-wiki" >&2
+        echo "Available commands: list-issues, get-issue, create-issue, update-issue, post-qa-comment, log-time, get-time-entries, time-report, list-projects, get-current-user, list-users, get-wiki" >&2
         echo "Use --help for more information" >&2
         exit 1
         ;;
