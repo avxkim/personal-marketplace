@@ -257,8 +257,10 @@ EOF
 - `estimated_hours`: Update estimate
 - `start_date`: Update start date
 - `due_date`: Update due date
-- `notes`: Add comment/note to issue
+- `notes`: Add comment/note to issue (max 2000 characters)
 - `private_notes`: Set to true for private note
+
+**Important Note**: The `notes` field has a maximum length of 2000 characters due to Redmine limitations. If you exceed this limit, the tool will return a clear error message instead of the cryptic 500 Internal Server Error from Redmine. Consider splitting long comments into multiple updates if needed.
 
 **Output** (JSON):
 
