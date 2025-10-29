@@ -92,34 +92,74 @@ def format_architecture_review(data: Dict) -> str:
     """Format architecture review comment."""
     lines = ["# Architecture Assessment 🏗️\n"]
 
-    # Concerns
     concerns = data.get("concerns", [])
-    if concerns:
-        lines.append("## ⚠️ Architectural Concerns\n")
-        for idx, concern in enumerate(concerns, 1):
-            severity = concern.get("severity", "Unknown")
-            desc = concern.get("description") or concern.get("message", "")
+
+    critical = [c for c in concerns if c.get("severity", "").lower() == "critical"]
+    major = [c for c in concerns if c.get("severity", "").lower() == "major"]
+    minor = [c for c in concerns if c.get("severity", "").lower() == "minor"]
+
+    if critical:
+        lines.append("## 🔴 Critical Concerns (Must Address)\n")
+        for idx, concern in enumerate(critical, 1):
             file_path = concern.get("file")
             line = concern.get("line")
-            url = concern.get("url")
+            url = concern.get("url", "")
+            desc = concern.get("description") or concern.get("message", "")
 
-            # Severity emoji
-            severity_emoji = {
-                "critical": "🔴",
-                "major": "🟠",
-                "minor": "🟡"
-            }.get(severity.lower(), "⚠️")
-
-            # Format similar to code-reviewer: numbered list with file link
             if file_path:
                 filename = file_path.split("/")[-1] if "/" in file_path else file_path
                 if line and url:
-                    lines.append(f"{idx}. {severity_emoji} <big>**{filename}**</big> ([{file_path}:{line}]({url})): {desc}\n")
+                    lines.append(f'{idx}. <big>**{filename}**</big> ([{file_path}:{line}]({url})):')
                 else:
-                    lines.append(f"{idx}. {severity_emoji} <big>**{filename}**</big> ({file_path}): {desc}\n")
+                    lines.append(f'{idx}. <big>**{filename}**</big> ({file_path}):')
             else:
-                # No file path - just show description with severity
-                lines.append(f"{idx}. {severity_emoji} **{severity.title()}**: {desc}\n")
+                lines.append(f'{idx}. **Critical**:')
+
+            lines.append(f'   {desc}\n')
+
+        lines.append("---\n")
+
+    if major:
+        lines.append("## 🟠 Major Concerns (Should Address)\n")
+        for idx, concern in enumerate(major, 1):
+            file_path = concern.get("file")
+            line = concern.get("line")
+            url = concern.get("url", "")
+            desc = concern.get("description") or concern.get("message", "")
+
+            if file_path:
+                filename = file_path.split("/")[-1] if "/" in file_path else file_path
+                if line and url:
+                    lines.append(f'{idx}. <big>**{filename}**</big> ([{file_path}:{line}]({url})):')
+                else:
+                    lines.append(f'{idx}. <big>**{filename}**</big> ({file_path}):')
+            else:
+                lines.append(f'{idx}. **Major**:')
+
+            lines.append(f'   {desc}\n')
+
+        lines.append("---\n")
+
+    if minor:
+        lines.append("## 🟡 Minor Concerns (Consider)\n")
+        for idx, concern in enumerate(minor, 1):
+            file_path = concern.get("file")
+            line = concern.get("line")
+            url = concern.get("url", "")
+            desc = concern.get("description") or concern.get("message", "")
+
+            if file_path:
+                filename = file_path.split("/")[-1] if "/" in file_path else file_path
+                if line and url:
+                    lines.append(f'{idx}. <big>**{filename}**</big> ([{file_path}:{line}]({url})):')
+                else:
+                    lines.append(f'{idx}. <big>**{filename}**</big> ({file_path}):')
+            else:
+                lines.append(f'{idx}. **Minor**:')
+
+            lines.append(f'   {desc}\n')
+
+        lines.append("---\n")
 
     return "\n".join(lines)
 

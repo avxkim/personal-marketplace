@@ -175,25 +175,22 @@ echo "$ARCH_REVIEW"
 ```markdown
 # Architecture Assessment 🏗️
 
-## ✅ Strengths
+## 🔴 Critical Concerns (Must Address)
 
-- Clear separation of concerns between controller and service layers
-- Repository pattern correctly applied for data access
+1. <big>**SecurityConfig.java**</big> ([src/config/SecurityConfig.java:45](https://...)):
+   Missing fleet-scoped authorization - `SecurityConfig` grants broad `SYS_ADMIN` access without tenant isolation checks. Recommendation: Implement `@PreAuthorize` with custom permission evaluator validating admin has authority over target driver's fleet (Effort: 2-3 SP)
 
----
-
-## ⚠️ Architectural Concerns
-
-1. 🔴 <big>**SecurityConfig.java**</big> ([src/config/SecurityConfig.java:45](https://...)): Missing fleet-scoped authorization - `SecurityConfig` grants broad `SYS_ADMIN` access without tenant isolation checks. Recommendation: Implement `@PreAuthorize` with custom permission evaluator validating admin has authority over target driver's fleet (Effort: 2-3 SP)
-
-2. 🔴 <big>**ShiftService.java**</big> ([src/services/ShiftService.java:120](https://...)): No external service synchronization for admin shift lifecycle events - billing service won't detect admin-started shifts for revenue calculations; notification service won't alert affected parties; Wialon integration may show phantom trips
+2. <big>**ShiftService.java**</big> ([src/services/ShiftService.java:120](https://...)):
+   No external service synchronization for admin shift lifecycle events - billing service won't detect admin-started shifts for revenue calculations; notification service won't alert affected parties; Wialon integration may show phantom trips
 
 ---
 
-## 📋 Architecture Compliance
+## 🟠 Major Concerns (Should Address)
 
-- Violates single responsibility - controller handles both HTTP and business logic
-- SOLID principles mostly followed except for SRP violation
+1. <big>**UserController.java**</big> ([src/controllers/UserController.java:89](https://...)):
+   Violates single responsibility - controller handles both HTTP and business logic
+
+---
 ```
 
 ---

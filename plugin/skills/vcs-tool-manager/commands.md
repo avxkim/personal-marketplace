@@ -582,23 +582,19 @@ echo '<JSON_DATA>' | "$VCS_TOOL" format-review -
 ```markdown
 # Architecture Assessment 🏗️
 
-## ✅ Strengths
+## 🔴 Critical Concerns (Must Address)
 
-- Clear separation of concerns
-- Repository pattern correctly applied
-
----
-
-## ⚠️ Architectural Concerns
-
-1. 🔴 <big>**UserController.java**</big> ([src/controllers/UserController.java:45](https://...)): Direct database access in `UserController` violates separation of concerns
+1. <big>**UserController.java**</big> ([src/controllers/UserController.java:45](https://...)):
+   Direct database access in `UserController` violates separation of concerns and bypasses repository pattern
 
 ---
 
-## 📋 Architecture Compliance
+## 🟠 Major Concerns (Should Address)
 
-- Violates SRP in controller
-- SOLID principles mostly followed
+1. <big>**SecurityConfig.java**</big> ([src/config/SecurityConfig.java:78](https://...)):
+   Missing authorization boundaries - service layer accessible without proper permission checks
+
+---
 ```
 
 **Features**:
