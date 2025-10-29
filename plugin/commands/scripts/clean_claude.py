@@ -420,7 +420,8 @@ class ClaudeConfigCleaner:
             return 1
 
         if len(args) == 0:
-            choice = self.show_menu()
+            self.show_dry_run_preview()
+            return 0
         elif args[0] == "status":
             self.display_storage(detailed=False)
             return 0

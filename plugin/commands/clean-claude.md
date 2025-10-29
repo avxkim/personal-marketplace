@@ -9,7 +9,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/commands/scripts/clean_claude.py $ARGUMENTS
 
 **Arguments**:
 
-- (no arguments) - Show interactive menu with all cleanup options
+- (no arguments) - Preview what would be deleted (same as dry-run)
 - `status` - Display detailed storage breakdown without cleaning
 - `dry-run` - Preview what would be deleted without making changes
 - `gentle` - Clear cache directories (debug logs, file-history)
@@ -21,9 +21,9 @@ python3 ${CLAUDE_PLUGIN_ROOT}/commands/scripts/clean_claude.py $ARGUMENTS
 **Examples**:
 
 ```bash
-/clean-claude              # Interactive menu
+/clean-claude              # Preview cleanup (default)
 /clean-claude status       # View storage usage
-/clean-claude dry-run      # Preview cleanup
+/clean-claude dry-run      # Preview cleanup (explicit)
 /clean-claude gentle       # Quick cache cleanup (~158MB)
 /clean-claude deep         # Aggressive cache cleanup (~170MB)
 /clean-claude projects     # Clean dead project settings (~40MB)
