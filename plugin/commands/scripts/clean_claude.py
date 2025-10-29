@@ -263,10 +263,13 @@ class ClaudeConfigCleaner:
                         removed.append(f"  • Would clear {description.lower()}: {self.format_size(dir_size)}")
                         bytes_saved += dir_size
                     else:
-                        shutil.rmtree(dir_path)
-                        dir_path.mkdir()
-                        bytes_saved += dir_size
-                        removed.append(f"  • Cleared {description.lower()}: {self.format_size(dir_size)}")
+                        try:
+                            shutil.rmtree(dir_path)
+                            dir_path.mkdir(exist_ok=True)
+                            bytes_saved += dir_size
+                            removed.append(f"  • Cleared {description.lower()}: {self.format_size(dir_size)}")
+                        except OSError as e:
+                            removed.append(f"  • Error clearing {description.lower()}: {e}")
 
         if not removed:
             removed.append("  • Nothing to clean")
