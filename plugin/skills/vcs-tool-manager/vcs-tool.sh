@@ -33,9 +33,12 @@ case "$command" in
     post-comment)
         python3 "$SCRIPTS_DIR/post_comment.py" "$@"
         ;;
+    approve-mr-pr)
+        python3 "$SCRIPTS_DIR/approve_mr_pr.py" "$@"
+        ;;
     *)
         echo "Unknown command: $command" >&2
-        echo "Available commands: detect-platform, get-gitlab-mr, get-github-pr, format-url, validate-url, find-line, format-review, post-comment" >&2
+        echo "Available commands: detect-platform, get-gitlab-mr, get-github-pr, format-url, validate-url, find-line, format-review, post-comment, approve-mr-pr" >&2
         exit 1
         ;;
 esac

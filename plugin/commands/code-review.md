@@ -126,7 +126,33 @@ If validation fails:
 - Check that "OUTPUT_FORMAT=JSON" was in delegation prompt
 - Re-run agents with correct prompt
 
-**6. Format Review Comments**
+**6. Auto-Approve if No Critical Concerns**
+
+After validating the code-reviewer JSON output, check if auto-approval conditions are met:
+
+```bash
+VERDICT=$(printf '%s' "$CODE_REVIEW_JSON" | jq -r '.verdict')
+CRITICAL_COUNT=$(printf '%s' "$CODE_REVIEW_JSON" | jq '.critical | length')
+
+if [[ "$VERDICT" == "PASS" ]] && [[ "$CRITICAL_COUNT" == "0" ]]; then
+  echo "✅ No critical concerns found. Auto-approving MR/PR..."
+  "$VCS_TOOL" approve-mr-pr "$PLATFORM" "$ARGUMENTS"
+  if [ $? -eq 0 ]; then
+    echo "✅ MR/PR approved successfully"
+  else
+    echo "⚠️  Failed to approve MR/PR (you may need to approve manually)"
+  fi
+fi
+```
+
+**Important Notes:**
+
+- Auto-approval happens ONLY when `verdict == "PASS"` AND `critical` array is empty
+- Approval runs BEFORE asking user to post review comment
+- If approval fails, the script continues (non-blocking) - user can approve manually
+- This ensures MRs/PRs are approved automatically when code is clean
+
+**7. Format Review Comments**
 
 Both `code-reviewer` and `software-architect` agents output **structured JSON**. Use the `format-review` script to generate consistent markdown comments.
 
@@ -200,7 +226,7 @@ EOF_CODE
 - ✅ **Automatic section skipping** - empty sections omitted
 - ✅ **Validated structure** - ensures required fields exist
 
-**7. Post Review Comment**
+**8. Post Review Comment**
 
 After formatting, **ask user** if they want to publish the comment to MR/PR.
 
