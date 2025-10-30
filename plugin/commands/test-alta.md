@@ -166,6 +166,7 @@ If `NEEDS_UI_TEST=true`, delegate to the web-qa agent with comprehensive testing
 2. **Test Credentials:**
    - Superadmin: `$ALTA_TEST_SUPERADMIN_USERNAME` / `$ALTA_TEST_SUPERADMIN_PASSWORD`
    - Moderator: `$ALTA_TEST_MODERATOR_USERNAME` / `$ALTA_TEST_MODERATOR_PASSWORD`
+   - **IMPORTANT**: Use `email` field (not `username`) in the auth request body
 
 3. **Test Requirements (from ticket):**
    - Subject: `$SUBJECT`
@@ -182,7 +183,7 @@ If `NEEDS_UI_TEST=true`, delegate to the web-qa agent with comprehensive testing
 
 **Example Delegation Prompt:**
 
-```
+````
 Please perform comprehensive QA testing for Redmine issue #$ISSUE_ID.
 
 **Environment**: $TEST_ENV
@@ -192,12 +193,20 @@ Please perform comprehensive QA testing for Redmine issue #$ISSUE_ID.
 **Test Credentials**:
 
 1. Superadmin Role:
-   - Username: $ALTA_TEST_SUPERADMIN_USERNAME
+   - Email: $ALTA_TEST_SUPERADMIN_USERNAME
    - Password: $ALTA_TEST_SUPERADMIN_PASSWORD
 
 2. Moderator Role:
-   - Username: $ALTA_TEST_MODERATOR_USERNAME
+   - Email: $ALTA_TEST_MODERATOR_USERNAME
    - Password: $ALTA_TEST_MODERATOR_PASSWORD
+
+**IMPORTANT**: When authenticating to `$ALTA_API_AUTH_ENDPOINT`, use `email` field (not `username`) in the request body:
+```json
+{
+  "email": "<email_value>",
+  "password": "<password_value>"
+}
+````
 
 **Issue Details**:
 
@@ -238,7 +247,8 @@ $JOURNALS
    - LOW: Improvements/suggestions
 
 Provide a detailed test report with your findings.
-```
+
+````
 
 ### 7. Process Test Results
 
@@ -282,7 +292,7 @@ else
 }
 EOF
 fi
-```
+````
 
 **Important**: When FAIL status is used, populate the `issues` array with findings from the web-qa agent:
 
