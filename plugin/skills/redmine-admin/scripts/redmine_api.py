@@ -8,6 +8,8 @@ import urllib.parse
 import urllib.error
 from typing import Dict, Optional, Any
 
+REDMINE_COMMENT_MAX_LENGTH = 10000
+
 
 class RedmineAPI:
     def __init__(self):
@@ -41,12 +43,12 @@ class RedmineAPI:
 
         headers = {
             "X-Redmine-API-Key": self.api_key,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json; charset=utf-8"
         }
 
         req_data = None
         if data:
-            req_data = json.dumps(data).encode('utf-8')
+            req_data = json.dumps(data, ensure_ascii=False).encode('utf-8')
 
         request = urllib.request.Request(url, data=req_data, headers=headers, method=method)
 

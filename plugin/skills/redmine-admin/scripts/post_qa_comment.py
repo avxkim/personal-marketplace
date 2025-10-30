@@ -9,25 +9,46 @@ sys.path.insert(0, script_dir)
 from redmine_api import RedmineAPI, REDMINE_COMMENT_MAX_LENGTH
 
 def format_pass_comment(scope, environment, notes=None):
-    comment = f"🟢 QA PASS\n📋 {scope} | 🌐 {environment}\n✓ No issues found"
+    comment = f"""# 🟢 QA PASS
+
+**Scope:** {scope}
+**Environment:** `{environment}`
+
+## ✅ Result
+No issues found - all tests passed successfully.
+"""
     if notes:
-        comment += f"\n\n{notes}"
-    return comment
+        comment += f"\n## 📝 Additional Notes\n{notes}\n"
+    return comment.strip()
 
 def format_fail_comment(scope, environment, issues, notes=None):
     issue_count = len(issues)
-    comment = f"🔴 QA FAIL\n📋 {scope} | 🌐 {environment}\n⚠️ {issue_count} issue(s):"
-    for issue in issues:
-        comment += f"\n• {issue}"
+    comment = f"""# 🔴 QA FAIL
+
+**Scope:** {scope}
+**Environment:** `{environment}`
+
+## ⚠️ Issues Found ({issue_count})
+"""
+    for idx, issue in enumerate(issues, 1):
+        comment += f"{idx}. {issue}\n"
+
     if notes:
-        comment += f"\n\n{notes}"
-    return comment
+        comment += f"\n## 📝 Additional Notes\n{notes}\n"
+    return comment.strip()
 
 def format_blocked_comment(scope, environment, blocker, notes=None):
-    comment = f"🟡 QA BLOCKED\n📋 {scope} | 🌐 {environment}\n🚫 {blocker}"
+    comment = f"""# 🟡 QA BLOCKED
+
+**Scope:** {scope}
+**Environment:** `{environment}`
+
+## 🚫 Blocker
+{blocker}
+"""
     if notes:
-        comment += f"\n\n{notes}"
-    return comment
+        comment += f"\n## 📝 Additional Notes\n{notes}\n"
+    return comment.strip()
 
 def main():
     if len(sys.argv) < 2 or sys.argv[1] != "-":
