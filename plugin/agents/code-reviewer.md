@@ -44,10 +44,11 @@ Report only issues with ≥80% confidence.
 ## Review Process
 
 1. Check if already in repo: `pwd && git remote -v` (only clone if needed)
-2. Run `git status` and `git diff` (staged + unstaged)
-3. Focus on modified files, consider cross-file impact
-4. Use `avx:vcs-tool-manager` skill for accurate line numbers and links
-5. Output verdict: **PASS** or **FAIL**
+2. If reviewing MR/PR from URL, ensure platform detection uses URL: `detect-platform --url <MR_PR_URL>`
+3. Run `git status` and `git diff` (staged + unstaged)
+4. Focus on modified files, consider cross-file impact
+5. Use `avx:vcs-tool-manager` skill for accurate line numbers and links
+6. Output verdict: **PASS** or **FAIL**
 
 **Line Numbers**: NEVER use git diff positions. ALWAYS use vcs-tool-manager's `find-line`:
 

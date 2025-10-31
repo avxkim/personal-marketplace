@@ -14,7 +14,13 @@
 
 ```bash
 VCS_TOOL=$(for path in $(jq -r 'to_entries[] | .value.installLocation + "/plugin/skills/vcs-tool-manager/vcs-tool.sh"' ~/.claude/plugins/known_marketplaces.json); do [ -f "$path" ] && echo "$path" && break; done)
-PLATFORM=$("$VCS_TOOL" detect-platform)
+
+# Pass URL to detect-platform for accurate detection in nested repos
+if [[ "$ARGUMENTS" =~ ^https?:// ]]; then
+  PLATFORM=$("$VCS_TOOL" detect-platform --url "$ARGUMENTS")
+else
+  PLATFORM=$("$VCS_TOOL" detect-platform)
+fi
 ```
 
 **2. Check Current Directory and Extract Repo Info**
