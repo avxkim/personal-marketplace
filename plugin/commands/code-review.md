@@ -49,7 +49,7 @@ if [ "$CURRENT_REPO" != "$TARGET_REPO" ]; then
 fi
 ```
 
-**3. Fetch MR/PR Details and Existing Comments**
+**3. Fetch MR/PR Details and Existing Comments (Including Replies)**
 
 Extract MR/PR number from $ARGUMENTS (URL or number)
 
@@ -57,15 +57,96 @@ Extract MR/PR number from $ARGUMENTS (URL or number)
 
 **GitLab** (if PLATFORM=gitlab):
 
+Fetch discussions (includes all comment threads with replies):
+
 ```bash
-glab mr view <MR_NUMBER> --comments --output json $REPO_FLAG
+# Get basic MR info
+MR_INFO=$(glab mr view <MR_NUMBER> --output json $REPO_FLAG)
+
+# Get full discussion threads with replies
+# Extract project ID and MR IID from MR_INFO
+PROJECT_ID=$(echo "$MR_INFO" | jq -r '.project_id')
+MR_IID=$(echo "$MR_INFO" | jq -r '.iid')
+
+# Fetch discussions via API (includes all notes and replies in threads)
+DISCUSSIONS=$(glab api "projects/$PROJECT_ID/merge_requests/$MR_IID/discussions")
+
+# Discussions structure: array of threads, each containing array of notes (original + replies)
+# Each note has: author.username, body, created_at, system (true for automated notes)
 ```
 
 **GitHub** (if PLATFORM=github):
 
+Fetch all comments including review threads:
+
 ```bash
-gh pr view <PR_NUMBER> --json number,title,body,headRefName,headRefOid,url,comments $REPO_FLAG
+# Get PR info with comments and review threads
+gh pr view <PR_NUMBER> --json number,title,body,headRefName,headRefOid,url,comments,reviews $REPO_FLAG
+
+# Note: 'comments' = PR-level comments, 'reviews' = review comments with threads
+# Review comments include replies via the review thread structure
 ```
+
+**Discussion Thread Structure**
+
+When passing discussions to agents, structure them clearly:
+
+**GitLab discussions format:**
+
+```json
+[
+  {
+    "id": "abc123",
+    "notes": [
+      {
+        "author": { "username": "reviewer1" },
+        "body": "This null check is missing",
+        "created_at": "2024-01-15T10:00:00Z",
+        "position": { "new_line": 42, "new_path": "src/file.ts" }
+      },
+      {
+        "author": { "username": "developer1" },
+        "body": "Fixed in commit abc123",
+        "created_at": "2024-01-15T11:00:00Z"
+      },
+      {
+        "author": { "username": "reviewer1" },
+        "body": "Still incomplete - need to check for undefined too",
+        "created_at": "2024-01-15T12:00:00Z"
+      }
+    ]
+  }
+]
+```
+
+**GitHub reviews format:**
+
+```json
+{
+  "comments": [...],  // PR-level comments
+  "reviews": [        // Code review comments with threads
+    {
+      "author": {"login": "reviewer1"},
+      "body": "Review comment",
+      "comments": {
+        "nodes": [
+          {"body": "Original comment", "author": {...}},
+          {"body": "Reply 1", "author": {...}},
+          {"body": "Reply 2", "author": {...}}
+        ]
+      }
+    }
+  ]
+}
+```
+
+**When processing discussions:**
+
+- Filter out system-generated notes (`system: true` in GitLab)
+- Preserve chronological order of replies
+- Include author information for each comment
+- Highlight unresolved threads where last reply indicates an outstanding issue
+- Pass the entire thread context, not just the original comment
 
 **4. Delegate to Agents with JSON Output**
 
@@ -86,8 +167,42 @@ Pass the following context to agents:
 
 - **OUTPUT_FORMAT=JSON** (MANDATORY - must be first line of prompt)
 - MR/PR metadata (number, title, source branch, commit SHA)
-- List of existing comments (if any) with their content and line references
-- Request agent to verify if existing comments have been addressed in current code
+- **Full discussion threads** including:
+  - Original comments/notes with author and timestamp
+  - **All replies from any user** (developers, reviewers, etc.)
+  - Thread structure showing conversation flow
+  - Line references for code-specific comments
+- Request agent to:
+  - Verify if existing comments have been addressed in current code
+  - Check if developer replies indicate fixes that are actually implemented
+  - Identify unresolved discussions where latest reply indicates issue still exists
+
+**Example: Formatting discussions for agent prompt**
+
+```
+OUTPUT_FORMAT=JSON
+
+Review MR #123 code changes.
+
+EXISTING DISCUSSIONS (with all replies):
+
+Thread 1 - src/auth.ts:42
+  @reviewer1 (2024-01-15 10:00): "Missing null check for user.email"
+  @dev1 (2024-01-15 11:00): "Fixed in commit abc123"
+  @reviewer1 (2024-01-15 12:00): "Still incomplete - need undefined check too"
+  STATUS: UNRESOLVED (latest reply indicates issue persists)
+
+Thread 2 - src/api.ts:88
+  @reviewer2 (2024-01-14 14:00): "Consider caching this API response"
+  @dev1 (2024-01-14 15:00): "Added Redis cache with 5min TTL"
+  @reviewer2 (2024-01-14 16:00): "Perfect, looks good!"
+  STATUS: RESOLVED
+
+Verify:
+1. Are unresolved issues (Thread 1) actually fixed in current code?
+2. Are resolved issues (Thread 2) properly implemented as discussed?
+3. Any new issues not covered by existing discussions?
+```
 
 ## Review Workflow:
 
